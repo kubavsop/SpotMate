@@ -1,6 +1,0 @@
-@SpotMate_HostAddress = http://localhost:5064
-
-GET {{SpotMate_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
