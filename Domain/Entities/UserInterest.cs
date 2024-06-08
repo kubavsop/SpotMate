@@ -1,6 +1,9 @@
-﻿namespace SpotMate.Domain.Entities;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using SpotMate.Domain.Entities.Base;
 
-public sealed class UserInterest
+namespace SpotMate.Domain.Entities;
+
+public sealed class UserInterest: BaseEntity
 {
     public Guid UserId { get; set; }
 
@@ -9,5 +12,4 @@ public sealed class UserInterest
     public Guid InterestId { get; set; }
 
     public Interest Interest { get; set; } = null!;
-    
 }

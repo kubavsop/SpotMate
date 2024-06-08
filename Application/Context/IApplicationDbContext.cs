@@ -5,6 +5,8 @@ namespace SpotMate.Application.Context;
 
 public interface IApplicationDbContext
 {
+    DbSet<FriendRequest> FriendRequests { get; }
+    DbSet<UserFriend> UserFriends { get; }
     DbSet<SpotMateUser> Users { get; }
     DbSet<RefreshToken> RefreshTokens { get; }
     DbSet<UserInterest> UserInterests { get;  }
