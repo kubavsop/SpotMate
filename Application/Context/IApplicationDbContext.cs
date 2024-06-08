@@ -7,5 +7,7 @@ public interface IApplicationDbContext
 {
     DbSet<SpotMateUser> Users { get; }
     DbSet<RefreshToken> RefreshTokens { get; }
+    DbSet<UserInterest> UserInterests { get;  }
+    DbSet<Interest> Interests { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

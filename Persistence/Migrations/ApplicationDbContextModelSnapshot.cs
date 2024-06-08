@@ -152,6 +152,27 @@ namespace SpotMate.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("SpotMate.Domain.Entities.Interest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ModifiedTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Interests");
+                });
+
             modelBuilder.Entity("SpotMate.Domain.Entities.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
@@ -266,6 +287,21 @@ namespace SpotMate.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("SpotMate.Domain.Entities.UserInterest", b =>
+                {
+                    b.Property<Guid>("InterestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("InterestId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserInterests");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
@@ -324,6 +360,25 @@ namespace SpotMate.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SpotMate.Domain.Entities.UserInterest", b =>
+                {
+                    b.HasOne("SpotMate.Domain.Entities.Interest", "Interest")
+                        .WithMany()
+                        .HasForeignKey("InterestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SpotMate.Domain.Entities.SpotMateUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Interest");
 
                     b.Navigation("User");
                 });
