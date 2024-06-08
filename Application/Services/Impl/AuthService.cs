@@ -36,10 +36,7 @@ public sealed class AuthService: IAuthService
         var user = new SpotMateUser
         {
             Email = dto.Email,
-            FullName = dto.FullName,
             UserName = dto.UserName,
-            Birthday = dto.Birthday,
-            Gender = dto.Gender,
         };
 
         if (await _userManager.FindByEmailAsync(user.Email) != null)
