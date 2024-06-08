@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SpotMate.Application.DTOs.Requests;
+using SpotMate.Application.DTOs.Responses;
 using SpotMate.Application.Services;
 using SpotMate.Infrastructure.Options;
 using SpotMate.Web.Controllers.Base;
@@ -19,7 +20,7 @@ public sealed class AccountController: BaseController
 
     [HttpPost]
     [Route("register")]
-    public async Task<IActionResult> Register(CreateUserDto userDto)
+    public async Task<ActionResult<TokenPairDto>> Register(CreateUserDto userDto)
     {
         var result = await _authService.RegisterAsync(userDto);
         return result.ToIActionResult();
@@ -28,7 +29,7 @@ public sealed class AccountController: BaseController
 
     [HttpPost]
     [Route("login")]
-    public async Task<IActionResult> Login(LoginCredentialsDto credentialsDto)
+    public async Task<ActionResult<TokenPairDto>> Login(LoginCredentialsDto credentialsDto)
     {
         var result = await _authService.LoginAsync(credentialsDto);
         return result.ToIActionResult();
@@ -38,9 +39,9 @@ public sealed class AccountController: BaseController
     [HttpPost]
     [Route("refresh")]
     [Authorize(AuthenticationSchemes = CustomJwtBearerDefaults.CheckOnlySignature)]
-    public async Task<IActionResult> Refresh(RefreshDto refreshDto)
+    public async Task<ActionResult<TokenPairDto>> Refresh(RefreshDto refreshDto)
     {
-        var result = await _authService.RefreshAsync(refreshDto);
+        var result = await _authService.RefreshAsync(refreshDto, TokenId);
         return result.ToIActionResult();
     }
     

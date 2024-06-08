@@ -1,6 +1,9 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.JsonWebTokens;
+using SpotMate.Application.DTOs.Responses;
+using SpotMate.Application.Exceptions;
+using SpotMate.Application.OperationResult;
 
 namespace SpotMate.Web.Controllers.Base;
 

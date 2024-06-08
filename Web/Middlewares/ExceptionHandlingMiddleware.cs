@@ -26,10 +26,9 @@ public sealed class ExceptionHandlingMiddleware
             context.Response.StatusCode = statusCode;
             context.Response.ContentType = "application/json";
             
-            var response = new ErrorResponse(statusCode.ToString(), exception.Message);
-            var result = JsonSerializer.Serialize(response);
+            var response = new ErrorResponse(exception.Message);
             
-            await context.Response.WriteAsync(result);
+            await context.Response.WriteAsJsonAsync(response);
         }
     }
 }

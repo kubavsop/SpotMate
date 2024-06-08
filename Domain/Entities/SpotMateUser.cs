@@ -10,9 +10,9 @@ public sealed class SpotMateUser: IdentityUser<Guid>, IBaseEntity
     public DateTime? ModifiedTime { get; set; }
     public override required string Email { get; set; }
     public override required string UserName { get; set; }
-    public required string FullName { get;  set; }
-    public required DateTime Birthday { get; set; }
-    public required Gender Gender { get; set; }
+    public string? FullName { get;  set; }
+    public DateTime? Birthday { get; set; }
+    public Gender? Gender { get; set; }
     
     public ICollection<RefreshToken> RefreshTokens { get; }
 }

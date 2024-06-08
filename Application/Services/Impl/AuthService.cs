@@ -41,6 +41,11 @@ public sealed class AuthService: IAuthService
             Birthday = dto.Birthday,
             Gender = dto.Gender,
         };
+
+        if (await _userManager.FindByEmailAsync(user.Email) != null)
+        {
+            return new BadRequestException("Email already exists");
+        }
         
         var result = await _userManager.CreateAsync(user, dto.Password);
         
@@ -65,9 +70,24 @@ public sealed class AuthService: IAuthService
         return await GetTokenPairs(user);
     }
 
-    public Task<Result<TokenPairDto>> RefreshAsync(RefreshDto dto)
+    public async Task<Result<TokenPairDto>> RefreshAsync(RefreshDto dto, Guid accessTokenId)
     {
-        throw new NotImplementedException();
+        var refreshToken = await _context.RefreshTokens
+            .Include(t => t.User)
+            .FirstOrDefaultAsync(t => t.AccessTokenId == accessTokenId);
+        if (refreshToken == null)
+        {
+            return new NotFoundException(nameof(RefreshToken));
+        }
+
+        if (refreshToken.Token != dto.RefreshToken)
+        {
+            return new BadRequestException("Invalid refresh token");
+        }
+        
+        _context.RefreshTokens.Remove(refreshToken);
+
+        return await GetTokenPairs(refreshToken.User);
     }
 
     public async Task<Result> LogoutAsync(Guid userId, Guid tokenId)

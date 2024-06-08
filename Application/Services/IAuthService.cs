@@ -8,6 +8,6 @@ public interface IAuthService
 {
     Task<Result<TokenPairDto>> RegisterAsync(CreateUserDto dto);   
     Task<Result<TokenPairDto>> LoginAsync(LoginCredentialsDto dto);
-    Task<Result<TokenPairDto>> RefreshAsync(RefreshDto dto);
+    Task<Result<TokenPairDto>> RefreshAsync(RefreshDto dto, Guid accessTokenId);
     Task<Result> LogoutAsync(Guid userId, Guid tokenId);
 }

@@ -1,5 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using SpotMate.Web.Configurations;
 
 namespace SpotMate.Web;
 
@@ -18,6 +19,8 @@ public static class DependencyInjection
             options.LowercaseUrls = true;
             options.LowercaseQueryStrings = true;
         });
+        services.ConfigureOptions<SwaggerGenOptionsConfigure>();
+        
         
         return services;
     }
