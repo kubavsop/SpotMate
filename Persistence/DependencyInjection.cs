@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using SpotMate.Application.Context;
 using SpotMate.Domain.Entities;
+using SpotMate.Domain.Enums;
 using SpotMate.Persistence.Interceptors;
 
 namespace SpotMate.Persistence;
@@ -36,4 +37,27 @@ public static class DependencyInjection
             await context.Database.MigrateAsync();
         }
     }
+
+    public static async Task EnsureInterestTypesCreatedAsync(this IServiceProvider services)
+    {
+        using (var scope = services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<IApplicationDbContext>();
+            foreach (var type in GetInterestTypes())
+            {
+                if (!await context.Interests.AnyAsync(i => i.Type == type))
+                {
+                    await context.Interests.AddAsync(new Interest
+                    {
+                        Type = type
+                    });
+                }
+            }
+
+            await context.SaveChangesAsync();
+        }
+    }
+    
+    private static IEnumerable<InterestType> GetInterestTypes() =>
+        Enum.GetValues<InterestType>();
 }

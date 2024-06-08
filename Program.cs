@@ -20,6 +20,7 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 await app.Services.AddAutoMigrationAsync();
+await app.Services.EnsureInterestTypesCreatedAsync();
 
 app.UseExceptionHandlingMiddleware();
 
