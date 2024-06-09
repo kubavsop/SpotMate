@@ -12,6 +12,7 @@ public static class DependencyInjection
         services.AddScoped<IInterestService, InterestService>();
         services.AddScoped<IProfileService, ProfileService>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IUserService, UserService>();
         services.AddAutoMapper(typeof(ConventionalMappingProfile).Assembly);
         services.Configure<RefreshTokenOptions>(configuration.GetSection("RefreshToken"));
         return services;

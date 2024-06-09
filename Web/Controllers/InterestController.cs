@@ -18,7 +18,7 @@ public sealed class InterestController: BaseController
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<InterestDto>>> GetProfile()
+    public async Task<ActionResult<IEnumerable<InterestDto>>> GetInterests()
     {
         var result = await _interestService.GetInterestsAsync();
         return result.ToIActionResult();
