@@ -4,7 +4,7 @@ using SpotMate.Application.OperationResult;
 
 namespace SpotMate.Application.Services;
 
-public interface IUserService
+public interface IProfileService
 {
     Task<Result<UserDto>> GetProfileAsync(Guid userId);
     Task<Result> EditProfileAsync(EditUserDto dto, Guid userId);

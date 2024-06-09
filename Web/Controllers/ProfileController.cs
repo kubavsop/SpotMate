@@ -8,29 +8,28 @@ using SpotMate.Web.Extensions;
 
 namespace SpotMate.Web.Controllers;
 
+[Authorize]
 public sealed class ProfileController: BaseController
 {
-    private readonly IUserService _userService;
+    private readonly IProfileService _profileService;
 
-    public ProfileController(IUserService userService)
+    public ProfileController(IProfileService profileService)
     {
-        _userService = userService;
+        _profileService = profileService;
     }
     
     [HttpGet]
-    [Authorize]
     public async Task<ActionResult<UserDto>> GetProfile()
     {
-        var result = await _userService.GetProfileAsync(UserId);
+        var result = await _profileService.GetProfileAsync(UserId);
         return result.ToIActionResult();
     }
     
     
     [HttpPut]
-    [Authorize]
     public async Task<IActionResult> EditProfile(EditUserDto editUserDto)
     {
-        var result = await _userService.EditProfileAsync(editUserDto, UserId);
+        var result = await _profileService.EditProfileAsync(editUserDto, UserId);
         return result.ToIActionResult();
     }
 }

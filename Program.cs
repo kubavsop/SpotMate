@@ -1,3 +1,4 @@
+using Microsoft.Extensions.FileProviders;
 using SpotMate.Application;
 using SpotMate.Infrastructure;
 using SpotMate.Persistence;
@@ -9,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
 builder.Services
-    .AddInfrastructureLayer()
+    .AddInfrastructureLayer(configuration)
     .AddApplicationLayer(configuration)
     .AddPersistenceLayer(configuration)
     .AddPresentationLayer();
@@ -29,6 +30,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(builder.Environment.ContentRootPath, "StaticFiles")),
+    RequestPath = "/Static"
+});
 
 app.UseHttpsRedirection();
 

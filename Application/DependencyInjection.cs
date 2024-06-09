@@ -9,10 +9,11 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplicationLayer(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IProfileService, ProfileService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddAutoMapper(typeof(ConventionalMappingProfile).Assembly);
         services.Configure<RefreshTokenOptions>(configuration.GetSection("RefreshToken"));
+        services.Configure<StaticBaseUrlOptions>(configuration.GetSection("StaticFilesBaseUrl"));
         return services;
     }
 }
