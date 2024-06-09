@@ -22,6 +22,6 @@ public sealed class UserDto: IMapFrom<SpotMateUser>
         profile.CreateMap<SpotMateUser, UserDto>()
             .ForMember(dest => dest.Avatar,
                 opt => 
-                    opt.MapFrom(src => src.AvatarFileName));
+                    opt.MapFrom(src => src.AvatarFileName != null ? $"http://localhost:5064/static/{src.AvatarFileName}" : null));
     }
 }

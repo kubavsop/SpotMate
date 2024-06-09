@@ -17,14 +17,14 @@ public class ProfileService: IProfileService
     private readonly IApplicationDbContext _context;
     private readonly IMapper _mapper;
     private readonly UserManager<SpotMateUser> _userManager;
-    private readonly StaticBaseUrlOptions _staticBaseUrl;
+    private readonly IFileProvider _fileProvider;
 
-    public ProfileService(IApplicationDbContext context, IMapper mapper, UserManager<SpotMateUser> userManager, IOptions<StaticBaseUrlOptions> staticBaseUrl)
+    public ProfileService(IApplicationDbContext context, IMapper mapper, UserManager<SpotMateUser> userManager, IFileProvider fileProvider)
     {
         _context = context;
         _mapper = mapper;
         _userManager = userManager;
-        _staticBaseUrl = staticBaseUrl.Value;
+        _fileProvider = fileProvider;
     }
 
     public async Task<Result<UserDto>> GetProfileAsync(Guid userId)
@@ -38,10 +38,8 @@ public class ProfileService: IProfileService
         {
             return new NotFoundException(nameof(SpotMateUser), userId);
         }
-
-        var userDto = _mapper.Map<UserDto>(user);
-        userDto.Avatar = userDto.Avatar != null ? _staticBaseUrl + userDto.Avatar : null;
-        return userDto;
+        
+        return _mapper.Map<UserDto>(user);
     }
 
     public async Task<Result> EditProfileAsync(EditUserDto dto, Guid userId)
@@ -79,7 +77,55 @@ public class ProfileService: IProfileService
         await _context.SaveChangesAsync();
         return Result.Success();
     }
-    
+
+    public async Task<Result> UploadAvatar(UploadAvatarDto uploadAvatarDto, Guid userId)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null)
+        {
+            return new NotFoundException(nameof(SpotMateUser), userId);
+        }
+
+        if (user.AvatarFileName != null)
+        {
+            _fileProvider.DeleteStaticFileAsync(user.AvatarFileName);
+        }
+        
+        byte[] file;
+        using (var stream = new MemoryStream())
+        {
+            await uploadAvatarDto.Avatar.CopyToAsync(stream);
+            file = stream.ToArray();   
+        }
+
+        var fileName = Guid.NewGuid() + Path.GetExtension(uploadAvatarDto.Avatar.FileName);
+        await _fileProvider.PutStaticFileAsync(file, fileName);
+        
+        user.AvatarFileName = fileName;
+        await _context.SaveChangesAsync();
+        return Result.Success();
+    }
+
+    public async Task<Result> DeleteAvatar(Guid userId)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null)
+        {
+            return new NotFoundException(nameof(SpotMateUser), userId);
+        }
+
+        if (user.AvatarFileName == null)
+        {
+            return new BadRequestException("The user does not have an avatar");
+        }
+        
+        _fileProvider.DeleteStaticFileAsync(user.AvatarFileName);
+        
+        user.AvatarFileName = null;
+        await _context.SaveChangesAsync();
+        return Result.Success();
+    }
+
     private async Task<Result> ChangeInterests(SpotMateUser user, List<Guid> interests)
     {
         var dictionaryOfUserInterests = user.Interests.ToDictionary(i => i.Id);

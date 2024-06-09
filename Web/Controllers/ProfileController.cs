@@ -25,11 +25,24 @@ public sealed class ProfileController: BaseController
         return result.ToIActionResult();
     }
     
-    
     [HttpPut]
     public async Task<IActionResult> EditProfile(EditUserDto editUserDto)
     {
         var result = await _profileService.EditProfileAsync(editUserDto, UserId);
+        return result.ToIActionResult();
+    }
+    
+    [HttpPost("avatar")]
+    public async Task<IActionResult> UploadAvatar(UploadAvatarDto uploadAvatarDto)
+    {
+        var result = await _profileService.UploadAvatar(uploadAvatarDto, UserId);
+        return result.ToIActionResult();
+    }
+    
+    [HttpDelete("avatar")]
+    public async Task<IActionResult> DeleteAvatar()
+    {
+        var result = await _profileService.DeleteAvatar(UserId);
         return result.ToIActionResult();
     }
 }

@@ -13,7 +13,6 @@ public static class DependencyInjection
         services.AddScoped<IAuthService, AuthService>();
         services.AddAutoMapper(typeof(ConventionalMappingProfile).Assembly);
         services.Configure<RefreshTokenOptions>(configuration.GetSection("RefreshToken"));
-        services.Configure<StaticBaseUrlOptions>(configuration.GetSection("StaticFilesBaseUrl"));
         return services;
     }
 }
