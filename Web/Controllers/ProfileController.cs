@@ -35,14 +35,14 @@ public sealed class ProfileController: BaseController
     [HttpPost("avatar")]
     public async Task<IActionResult> UploadAvatar(UploadAvatarDto uploadAvatarDto)
     {
-        var result = await _profileService.UploadAvatar(uploadAvatarDto, UserId);
+        var result = await _profileService.UploadAvatarAsync(uploadAvatarDto, UserId);
         return result.ToIActionResult();
     }
     
     [HttpDelete("avatar")]
     public async Task<IActionResult> DeleteAvatar()
     {
-        var result = await _profileService.DeleteAvatar(UserId);
+        var result = await _profileService.DeleteAvatarAsync(UserId);
         return result.ToIActionResult();
     }
 }

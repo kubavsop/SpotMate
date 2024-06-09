@@ -78,7 +78,7 @@ public class ProfileService: IProfileService
         return Result.Success();
     }
 
-    public async Task<Result> UploadAvatar(UploadAvatarDto uploadAvatarDto, Guid userId)
+    public async Task<Result> UploadAvatarAsync(UploadAvatarDto uploadAvatarDto, Guid userId)
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
         if (user == null)
@@ -106,7 +106,7 @@ public class ProfileService: IProfileService
         return Result.Success();
     }
 
-    public async Task<Result> DeleteAvatar(Guid userId)
+    public async Task<Result> DeleteAvatarAsync(Guid userId)
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
         if (user == null)
