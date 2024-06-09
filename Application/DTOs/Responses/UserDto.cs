@@ -19,7 +19,7 @@ public sealed class UserDto: IMapFrom<SpotMateUser>
     public DateTime? Birthday { get; init; }
     public Gender? Gender { get; init; }
     [Required]
-    public required ICollection<InterestDto> Interests { get; init; }
+    public required IEnumerable<InterestDto> Interests { get; init; }
 
     public void Mapping(Profile profile)
     {

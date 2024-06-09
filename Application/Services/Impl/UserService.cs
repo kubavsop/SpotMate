@@ -30,10 +30,11 @@ public class UserService: IUserService
         
         var users = await _context.Users
             .AsNoTracking()
+            .Include(u => u.Interests)
             .Where(u => u.Id != userId)
             .Where(u => normalizedUserName == null || u.NormalizedUserName == normalizedUserName)
             .Where(u => searchParameters.Interests == null || u.Interests.Select(i => i.Id).Intersect(searchParameters.Interests).Any())
-            .Where(u => !searchParameters.IsInterestMatch || u.Interests.Count == 0 || u.Interests.Select(i => i.Id).Intersect(myInterests).Any())
+            .Where(u => !searchParameters.IsInterestMatch || myInterests.Count == 0 || u.Interests.Select(i => i.Id).Intersect(myInterests).Any())
             .Skip(searchParameters.Offset)
             .Take(searchParameters.Limit)
             .ToListAsync();
