@@ -41,4 +41,9 @@ public class UserService: IUserService
 
         return _mapper.Map<List<UserShortDto>>(users);
     }
+
+    public Task<Result> CreateFriendRequest(Guid senderUserId, Guid receiverUserId)
+    {
+        throw new NotImplementedException();
+    }
 }

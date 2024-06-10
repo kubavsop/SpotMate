@@ -9,6 +9,7 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplicationLayer(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddScoped<IRequestService, RequestService>();
         services.AddScoped<IInterestService, InterestService>();
         services.AddScoped<IProfileService, ProfileService>();
         services.AddScoped<IAuthService, AuthService>();

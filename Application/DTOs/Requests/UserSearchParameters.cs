@@ -3,7 +3,7 @@ using SpotMate.Application.DTOs.Base;
 
 namespace SpotMate.Application.DTOs.Requests;
 
-public class UserSearchParameters: BaseSearchParameters
+public class UserSearchParameters: UserShortSearchParameters
 {
     public string? UserName { get; init; }
     public IEnumerable<Guid>?  Interests { get; init; }

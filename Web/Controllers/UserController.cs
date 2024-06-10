@@ -24,4 +24,11 @@ public sealed class UserController: BaseController
         var result = await _userService.GetUsersAsync(searchParameters, UserId);
         return result.ToIActionResult();
     }
+
+    [HttpPost("{id:guid}/request")]
+    public async Task<IActionResult> CreateFriendRequest(Guid id)
+    {
+        var result = await _userService.CreateFriendRequest(UserId, id);
+        return result.ToIActionResult();
+    }
 }

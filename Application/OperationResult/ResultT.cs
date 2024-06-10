@@ -1,6 +1,6 @@
 ﻿namespace SpotMate.Application.OperationResult;
 
-public sealed class Result<TValue>: OperationResult.Result
+public sealed class Result<TValue>: Result
 {
     private readonly TValue? _value;
 
