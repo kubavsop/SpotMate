@@ -2,18 +2,21 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SpotMate.Persistence;
 
 #nullable disable
 
-namespace SpotMate.Migrations
+namespace SpotMate.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240610091748_RenameFriends")]
+    partial class RenameFriends
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -179,7 +182,7 @@ namespace SpotMate.Migrations
 
                     b.HasIndex("SenderUserId");
 
-                    b.ToTable("FriendRequests", (string)null);
+                    b.ToTable("FriendRequests");
                 });
 
             modelBuilder.Entity("SpotMate.Domain.Entities.Interest", b =>
@@ -199,7 +202,7 @@ namespace SpotMate.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Interests", (string)null);
+                    b.ToTable("Interests");
                 });
 
             modelBuilder.Entity("SpotMate.Domain.Entities.RefreshToken", b =>
@@ -231,7 +234,7 @@ namespace SpotMate.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("RefreshTokens", (string)null);
+                    b.ToTable("RefreshTokens");
                 });
 
             modelBuilder.Entity("SpotMate.Domain.Entities.SpotMateUser", b =>
@@ -343,7 +346,7 @@ namespace SpotMate.Migrations
 
                     b.HasIndex("SecondUserId");
 
-                    b.ToTable("UserFriends", (string)null);
+                    b.ToTable("UserFriends");
                 });
 
             modelBuilder.Entity("SpotMate.Domain.Entities.UserInterest", b =>
@@ -370,7 +373,7 @@ namespace SpotMate.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserInterests", (string)null);
+                    b.ToTable("UserInterests");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>

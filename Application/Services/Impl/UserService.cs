@@ -3,7 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using SpotMate.Application.Context;
 using SpotMate.Application.DTOs.Requests;
 using SpotMate.Application.DTOs.Responses;
+using SpotMate.Application.Exceptions;
 using SpotMate.Application.OperationResult;
+using SpotMate.Domain.Entities;
+using SpotMate.Domain.Enums;
 
 namespace SpotMate.Application.Services.Impl;
 
@@ -42,8 +45,34 @@ public class UserService: IUserService
         return _mapper.Map<List<UserShortDto>>(users);
     }
 
-    public Task<Result> CreateFriendRequest(Guid senderUserId, Guid receiverUserId)
+    public async Task<Result> CreateFriendRequest(Guid senderUserId, Guid receiverUserId)
     {
-        throw new NotImplementedException();
+        if (!await _context.Users.AnyAsync(u => u.Id == senderUserId)|| !await _context.Users.AnyAsync(u => u.Id == receiverUserId))
+        {
+            return new NotFoundException(nameof(SpotMateUser));
+        }
+
+        if (await _context.FriendRequests.AnyAsync(fr =>
+                (fr.SenderUserId == senderUserId && fr.ReceiverUserId == receiverUserId) ||
+                (fr.SenderUserId == receiverUserId && fr.ReceiverUserId == senderUserId)))
+        {
+            return new BadRequestException("Request already exists");
+        }
+        
+        if (await _context.UserFriends.AnyAsync(uf => (uf.FirstUserId == senderUserId && uf.SecondUserId == receiverUserId) || (uf.FirstUserId == receiverUserId && uf.SecondUserId == senderUserId)))
+        {
+            return new BadRequestException("You are already friends");
+        }
+
+        await _context.FriendRequests.AddAsync(new FriendRequest
+        {
+            ReceiverUserId = receiverUserId,
+            SenderUserId = senderUserId,
+            RequestStatus = RequestStatus.Pending
+        });
+        
+        await _context.SaveChangesAsync();
+        
+        return Result.Success();
     }
 }

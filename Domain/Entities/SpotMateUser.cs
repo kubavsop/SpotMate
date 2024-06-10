@@ -20,6 +20,4 @@ public sealed class SpotMateUser: IdentityUser<Guid>, IBaseEntity
     public ICollection<FriendRequest> ReceivedRequests { get; } = [];
     
     public ICollection<FriendRequest> SentRequests { get; } = [];
-
-    public ICollection<UserFriend> Friends { get; } = [];
 }

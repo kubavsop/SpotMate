@@ -10,7 +10,7 @@ namespace SpotMate.Web.Controllers;
 public sealed class FriendController: BaseController
 {
     [HttpGet("my")]
-    public async Task<ActionResult<IEnumerable<UserShortDto>>> GetFriends(UserShortSearchParameters userSearchParameters)
+    public async Task<ActionResult<IEnumerable<UserShortDto>>> GetFriends([FromQuery] UserShortSearchParameters userSearchParameters)
     {
         throw new NotImplementedException();
     }

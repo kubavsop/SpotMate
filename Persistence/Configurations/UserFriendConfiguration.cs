@@ -9,15 +9,15 @@ public class UserFriendConfiguration: IEntityTypeConfiguration<UserFriend>
     public void Configure(EntityTypeBuilder<UserFriend> builder)
     {
         builder
-            .HasOne(ur => ur.User)
-            .WithMany(u => u.Friends)
-            .HasForeignKey(uf => uf.UserId)
+            .HasOne(ur => ur.FirstUser)
+            .WithMany()
+            .HasForeignKey(uf => uf.FirstUserId)
             .IsRequired();
         
         builder
-            .HasOne(ur => ur.Friend)
+            .HasOne(ur => ur.SecondUser)
             .WithMany()
-            .HasForeignKey(uf => uf.FriendId)
+            .HasForeignKey(uf => uf.SecondUserId)
             .IsRequired();
     }
 }

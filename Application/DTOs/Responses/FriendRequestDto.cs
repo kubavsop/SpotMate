@@ -1,5 +1,4 @@
-﻿using SpotMate.Domain.Entities;
-using SpotMate.Domain.Enums;
+﻿using SpotMate.Domain.Enums;
 
 namespace SpotMate.Application.DTOs.Responses;
 

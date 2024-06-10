@@ -33,14 +33,14 @@ public sealed class RequestController: BaseController
     }
 
     [HttpGet("sent")]
-    public async Task<ActionResult<IEnumerable<FriendRequestDto>>> GetSentRequest(RequestSearchParameters requestSearchParameters)
+    public async Task<ActionResult<IEnumerable<FriendRequestDto>>> GetSentRequest([FromQuery] RequestSearchParameters requestSearchParameters)
     {
         var result = await _requestService.GetSentRequestAsync(requestSearchParameters, UserId);
         return result.ToIActionResult();       
     }
     
     [HttpGet("received")]
-    public async Task<ActionResult<IEnumerable<FriendRequestDto>>> GetReceivedRequest(RequestSearchParameters requestSearchParameters)
+    public async Task<ActionResult<IEnumerable<FriendRequestDto>>> GetReceivedRequest([FromQuery] RequestSearchParameters requestSearchParameters)
     {
         var result = await _requestService.GetReceivedRequestAsync(requestSearchParameters, UserId);
         return result.ToIActionResult();        
