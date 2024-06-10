@@ -1,0 +1,27 @@
+﻿services:
+  app:
+    image: backend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    networks:
+      - my-net
+    depends_on:
+      - db
+  db:
+    container_name: postgres
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: SpotMateDb
+    expose:
+      - "5432"
+    networks:
+      - my-net
+
+networks:
+  my-net:
+    driver: bridge
