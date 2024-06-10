@@ -28,8 +28,10 @@ public sealed class FriendService: IFriendService
             .Include(uf => uf.SecondUser)
             .Where(uf => uf.SecondUserId == userId || uf.FirstUserId == userId)
             .Where(uf => normalizedUserName == null ||
-                         (uf.FirstUserId == userId && uf.SecondUser.UserName == normalizedUserName) ||
-                         (uf.SecondUserId == userId && uf.FirstUser.UserName == normalizedUserName))
+                         (uf.FirstUserId == userId && uf.SecondUser.NormalizedUserName!.Contains(normalizedUserName)) ||
+                         (uf.SecondUserId == userId && uf.FirstUser.NormalizedUserName!.Contains(normalizedUserName)))
+            .Skip(userShortSearchParameters.Offset)
+            .Take(userShortSearchParameters.Limit)
             .Select(uf => uf.FirstUserId == userId ? uf.SecondUser : uf.FirstUser)
             .ToListAsync();
 
@@ -48,7 +50,8 @@ public sealed class FriendService: IFriendService
         }
 
         _context.UserFriends.Remove(userFriend);
-        
+
+        await _context.SaveChangesAsync();
         return Result.Success();
     }
 }

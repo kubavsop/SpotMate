@@ -128,7 +128,7 @@ public sealed class RequestService: IRequestService
         
         var requests = _context.FriendRequests
             .Where(r => (!isReceived && r.SenderUserId == userId) || (isReceived && r.ReceiverUserId == userId))
-            .Where(r => normalizedUserName == null || (!isReceived && r.ReceiverUser.NormalizedUserName == normalizedUserName) || (isReceived && r.SenderUser.NormalizedUserName == normalizedUserName))
+            .Where(r => normalizedUserName == null || (!isReceived && r.ReceiverUser.NormalizedUserName!.Contains(normalizedUserName)) || (isReceived && r.SenderUser.NormalizedUserName!.Contains(normalizedUserName)))
             .Where(r => searchParameters.RequestStatus == null || r.RequestStatus == searchParameters.RequestStatus)
             .Skip(searchParameters.Offset)
             .Take(searchParameters.Limit);
