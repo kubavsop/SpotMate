@@ -18,6 +18,7 @@ ARG BUILD_CONFIGURATION=Release
 RUN dotnet publish "SpotMate.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
+ENV ASPNETCORE_ENVIRONMENT=Development
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "SpotMate.dll"]
