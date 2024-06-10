@@ -74,7 +74,8 @@ public sealed class RequestService: IRequestService
         {
             linkedList.AddLast(new FriendRequestDto
             {
-                User = _mapper.Map<UserShortDto>(request.SenderUser),
+                Id = request.Id,
+                User = _mapper.Map<UserShortDto>(request.ReceiverUser),
                 RequestStatus = request.RequestStatus
             });
         }
@@ -95,6 +96,7 @@ public sealed class RequestService: IRequestService
         {
             linkedList.AddLast(new FriendRequestDto
             {
+                Id = request.Id,
                 User = _mapper.Map<UserShortDto>(request.SenderUser),
                 RequestStatus = request.RequestStatus
             });
