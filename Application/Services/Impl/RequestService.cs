@@ -33,8 +33,14 @@ public sealed class RequestService: IRequestService
 
         await _context.UserFriends.AddAsync(new UserFriend
         {
-            FirstUserId = request.SenderUserId,
-            SecondUserId = request.ReceiverUserId
+            UserId = request.SenderUserId,
+            FriendId = request.ReceiverUserId
+        });
+        
+        await _context.UserFriends.AddAsync(new UserFriend
+        {
+            UserId = request.ReceiverUserId,
+            FriendId = request.SenderUserId
         });
 
         _context.FriendRequests.Remove(request);

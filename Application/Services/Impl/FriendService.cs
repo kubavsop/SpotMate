@@ -22,17 +22,14 @@ public sealed class FriendService: IFriendService
     public async Task<Result<IEnumerable<UserShortDto>>> GetFriendsAsync(UserShortSearchParameters userShortSearchParameters, Guid userId)
     {
         var normalizedUserName = userShortSearchParameters.UserName?.ToUpper();
-        
+
         var friends = await _context.UserFriends
-            .Include( uf => uf.FirstUser)
-            .Include(uf => uf.SecondUser)
-            .Where(uf => uf.SecondUserId == userId || uf.FirstUserId == userId)
-            .Where(uf => normalizedUserName == null ||
-                         (uf.FirstUserId == userId && uf.SecondUser.NormalizedUserName!.Contains(normalizedUserName)) ||
-                         (uf.SecondUserId == userId && uf.FirstUser.NormalizedUserName!.Contains(normalizedUserName)))
+            .Include(f => f.Friend)
+            .Where(f => f.UserId == userId)
+            .Where(uf => normalizedUserName == null || uf.Friend.NormalizedUserName!.Contains(normalizedUserName))
             .Skip(userShortSearchParameters.Offset)
             .Take(userShortSearchParameters.Limit)
-            .Select(uf => uf.FirstUserId == userId ? uf.SecondUser : uf.FirstUser)
+            .Select(f => f.Friend)
             .ToListAsync();
 
         return _mapper.Map<List<UserShortDto>>(friends);
@@ -40,16 +37,18 @@ public sealed class FriendService: IFriendService
 
     public async Task<Result> DeleteFriendAsync(Guid friendId, Guid userId)
     {
-        var userFriend = await _context.UserFriends.FirstOrDefaultAsync(uf =>
-            (uf.FirstUserId == friendId && uf.SecondUserId == userId) ||
-            (uf.SecondUserId == friendId && uf.FirstUserId == userId));
+        var firstUserFriend = await _context.UserFriends.FirstOrDefaultAsync(uf => uf.UserId == userId &&
+                                                                              uf.FriendId == friendId);
+        var secondUserFriend = await _context.UserFriends.FirstOrDefaultAsync(uf => uf.UserId == friendId &&
+            uf.FriendId == userId);
 
-        if (userFriend == null)
+        if (firstUserFriend == null || secondUserFriend == null)
         {
             return new BadRequestException("The user is not your friend");
         }
 
-        _context.UserFriends.Remove(userFriend);
+        _context.UserFriends.Remove(firstUserFriend);
+        _context.UserFriends.Remove(secondUserFriend);
 
         await _context.SaveChangesAsync();
         return Result.Success();

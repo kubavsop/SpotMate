@@ -22,6 +22,6 @@ public sealed class UserShortDto: IMapFrom<SpotMateUser>
         profile.CreateMap<SpotMateUser, UserShortDto>()
             .ForMember(dest => dest.Avatar,
                 opt => 
-                    opt.MapFrom(src => src.AvatarFileName != null ? $"http://89.111.175.47:8080/static/{src.AvatarFileName}" : null));
+                    opt.MapFrom(src => src.AvatarFileName != null ? $"http://localhost:5064/static/{src.AvatarFileName}" : null));
     }
 }

@@ -21,7 +21,7 @@ public class UserService: IUserService
         _mapper = mapper;
     }
 
-    public async Task<Result<IEnumerable<UserShortDto>>> GetUsersAsync(UserSearchParameters searchParameters, Guid userId)
+    public async Task<Result<IEnumerable<UserShortDto>>> GetNonFriendsUsersAsync(UserSearchParameters searchParameters, Guid userId)
     {
         var normalizedUserName = searchParameters.UserName?.ToUpper();
 
@@ -59,7 +59,7 @@ public class UserService: IUserService
             return new BadRequestException("Request already exists");
         }
         
-        if (await _context.UserFriends.AnyAsync(uf => (uf.FirstUserId == senderUserId && uf.SecondUserId == receiverUserId) || (uf.FirstUserId == receiverUserId && uf.SecondUserId == senderUserId)))
+        if (await _context.UserFriends.AnyAsync(uf => (uf.UserId == senderUserId && uf.FriendId == receiverUserId) || (uf.UserId == receiverUserId && uf.FriendId == senderUserId)))
         {
             return new BadRequestException("You are already friends");
         }

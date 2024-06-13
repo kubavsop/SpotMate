@@ -15,6 +15,14 @@ public sealed class SpotMateUser: IdentityUser<Guid>, IBaseEntity
     public DateTime? Birthday { get; set; }
     public Gender? Gender { get; set; }
 
+    public bool IsInvisible { get; set; } = false;
+
+    public UserStatus UserStatus { get; set; }
+    public Coordinate? LatestCoordinates { get; set; }
+
+    public ICollection<DailyStep> DailySteps { get; } = [];
+    public ICollection<UserFriend> Friends { get; } = [];
+    
     public ICollection<RefreshToken> RefreshTokens { get; } = [];
     public ICollection<Interest> Interests { get; } = [];
     public ICollection<FriendRequest> ReceivedRequests { get; } = [];

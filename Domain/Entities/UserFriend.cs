@@ -4,11 +4,13 @@ namespace SpotMate.Domain.Entities;
 
 public sealed class UserFriend: BaseEntity
 {
-    public Guid FirstUserId { get; set; }
+    public Guid UserId { get; set; }
 
-    public SpotMateUser FirstUser  { get; set; } = null!;
+    public SpotMateUser User  { get; set; } = null!;
     
-    public Guid SecondUserId  { get; set; }
+    public Guid FriendId  { get; set; }
 
-    public SpotMateUser SecondUser  { get; set; } = null!;
+    public SpotMateUser Friend  { get; set; } = null!;
+
+    public bool CanSeeUser { get; set; } = true;
 }
