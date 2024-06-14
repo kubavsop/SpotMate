@@ -13,7 +13,7 @@ public sealed class FriendDto: IMapFrom<SpotMateUser>
     [Required]
     public required string Email { get; init; }
     [Required]
-    public bool CanSeeUser { get; set; }
+    public bool IsLocationFrozen { get; set; }
     public string? Avatar { get; set; }
     public string? FullName { get;  init; }
     public UserStatus? UserStatus { get; init; }

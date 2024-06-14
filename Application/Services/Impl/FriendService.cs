@@ -54,18 +54,47 @@ public sealed class FriendService: IFriendService
         return Result.Success();
     }
 
-    public Task<Result<FriendDto>> GetFriend(Guid friendId, Guid userId)
+    public async Task<Result<FriendDto>> GetFriend(Guid friendId, Guid userId)
     {
-        throw new NotImplementedException();
+        var userFriend = await _context.UserFriends
+            .AsNoTracking()
+            .Include(uf => uf.Friend)
+            .ThenInclude(f => f.Interests)
+            .FirstOrDefaultAsync(uf => uf.FriendId == friendId && uf.UserId == userId);
+
+        if (userFriend == null)
+        {
+            return new BadRequestException("The user is not your friend");
+        }
+
+        var friend = _mapper.Map<FriendDto>(userFriend.Friend);
+        friend.IsLocationFrozen = userFriend.IsLocationFrozen;
+        return friend;
     }
 
     public Task<Result> FreezeLocationAsync(Guid friendId, Guid userId)
     {
-        throw new NotImplementedException();
+        return ChangeIsLocationFrozen(friendId, userId, true);
     }
 
     public Task<Result> UnFreezeLocationAsync(Guid friendId, Guid userId)
     {
-        throw new NotImplementedException();
+        return ChangeIsLocationFrozen(friendId, userId, false);
+    }
+
+    private async Task<Result> ChangeIsLocationFrozen(Guid friendId, Guid userId, bool isLocationFrozen)
+    {
+        var userFriend = await _context.UserFriends
+            .FirstOrDefaultAsync(uf => uf.UserId == userId && uf.FriendId == friendId);
+        
+        if (userFriend == null)
+        {
+            return new BadRequestException("The user is not your friend");
+        }
+
+        userFriend.IsLocationFrozen = isLocationFrozen;
+        await _context.SaveChangesAsync();
+
+        return Result.Success();
     }
 }
