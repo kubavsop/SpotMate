@@ -17,7 +17,7 @@ public sealed class SpotMateUser: IdentityUser<Guid>, IBaseEntity
 
     public bool IsInvisible { get; set; } = false;
 
-    public UserStatus UserStatus { get; set; }
+    public UserStatus? UserStatus { get; set; }
     public Coordinate? LatestCoordinates { get; set; }
 
     public ICollection<DailyStep> DailySteps { get; } = [];

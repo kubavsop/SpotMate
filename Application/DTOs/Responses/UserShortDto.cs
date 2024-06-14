@@ -14,8 +14,9 @@ public sealed class UserShortDto: IMapFrom<SpotMateUser>
     public required string UserName { get; init; }
     public string? Avatar { get; set; }
     
-    [Required]
-    public required IEnumerable<InterestDto> Interests { get; init; }
+    public string? FullName { get;  set; }
+    
+    public UserStatus? UserStatus { get; set; }
     
     public void Mapping(Profile profile)
     {

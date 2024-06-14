@@ -29,8 +29,7 @@ public sealed class AuthService: IAuthService
         _userManager = userManager;
         _jwtProvider = jwtProvider;
     }
-
-
+    
     public async Task<Result<TokenPairDto>> RegisterAsync(CreateUserDto dto)
     {
         var user = new SpotMateUser

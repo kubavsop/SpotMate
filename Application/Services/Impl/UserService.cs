@@ -30,11 +30,16 @@ public class UserService: IUserService
             .Where(ui => ui.UserId == userId)
             .Select(ui => ui.InterestId)
             .ToListAsync();
+
+        var friends = await _context.UserFriends
+            .AsNoTracking()
+            .Where(uf => uf.UserId == userId)
+            .Select(uf => uf.FriendId)
+            .ToListAsync();
         
         var users = await _context.Users
             .AsNoTracking()
-            .Include(u => u.Interests)
-            .Where(u => u.Id != userId)
+            .Where(u => u.Id != userId && !friends.Contains(u.Id))
             .Where(u => normalizedUserName == null || u.NormalizedUserName!.Contains(normalizedUserName))
             .Where(u => searchParameters.Interests == null || u.Interests.Select(i => i.Id).Intersect(searchParameters.Interests).Any())
             .Where(u => !searchParameters.IsInterestMatch || myInterests.Count == 0 || u.Interests.Select(i => i.Id).Intersect(myInterests).Any())
