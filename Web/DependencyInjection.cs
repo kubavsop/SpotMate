@@ -1,6 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using SpotMate.Web.Configurations;
+using SpotMate.Web.Converters;
 
 namespace SpotMate.Web;
 
@@ -12,7 +13,11 @@ public static class DependencyInjection
             {
                 options.OutputFormatters.RemoveType<HttpNoContentOutputFormatter>();
             })
-            .AddJsonOptions(config => config.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+            .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                    options.JsonSerializerOptions.Converters.Add(new CustomDateTimeConverter());
+                });
         
         services.Configure<RouteOptions>(options =>
         {
