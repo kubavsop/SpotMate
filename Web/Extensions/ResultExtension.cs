@@ -18,7 +18,7 @@ public static class ResultExtension
     public static IActionResult ToIActionResult(this Result result)
     {
         return result.Match<IActionResult>(
-            onSuccess: () => new OkResult(),
+            onSuccess: () => new NoContentResult(),
             onFailure: FailureResult
         );
     }
