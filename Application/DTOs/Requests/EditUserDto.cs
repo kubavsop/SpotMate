@@ -7,19 +7,9 @@ namespace SpotMate.Application.DTOs.Requests;
 
 public class EditUserDto
 {
-    [Required]
-    [MinLength(1)]
-    [MaxLength(1000)]
-    public required string UserName { get; init; }
-    
     [MinLength(1)]
     [MaxLength(1000)]
     public string? FullName { get; init; }
-
-    [Required]
-    [EmailAddress]
-    [MaxLength(1000)]
-    public required string Email { get; init; }
     
     [Required]
     [MaxLength(10)]

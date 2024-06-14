@@ -1,13 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using SpotMate.Application.Context;
 using SpotMate.Application.DTOs.Requests;
 using SpotMate.Application.DTOs.Responses;
 using SpotMate.Application.Exceptions;
 using SpotMate.Application.OperationResult;
-using SpotMate.Application.Options;
 using SpotMate.Domain.Entities;
 
 namespace SpotMate.Application.Services.Impl;
@@ -53,20 +51,6 @@ public class ProfileService: IProfileService
             return new NotFoundException(nameof(SpotMateUser), userId);
         }
         
-        if (await _context.Users.AnyAsync(u => u.UserName == dto.UserName && u.Id != user.Id))
-        {
-            return new BadRequestException("UserName already exists");
-        }
-        
-        if (dto.Email != user.Email && await _userManager.FindByEmailAsync(dto.Email) != null)
-        {
-            return new BadRequestException("Email already exists");
-        }
-
-        user.Email = dto.Email;
-        user.NormalizedEmail = dto.Email.ToUpper();
-        user.UserName = dto.UserName;
-        user.NormalizedUserName = dto.UserName.ToUpper();
         user.FullName = dto.FullName;
         user.Birthday = dto.Birthday;
         user.Gender = dto.Gender;
