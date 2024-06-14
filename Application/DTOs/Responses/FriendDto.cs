@@ -9,6 +9,8 @@ namespace SpotMate.Application.DTOs.Responses;
 public sealed class FriendDto: IMapFrom<SpotMateUser>
 {
     [Required]
+    public Guid Id { get; init; }
+    [Required]
     public required string UserName { get; init; }
     [Required]
     public required string Email { get; init; }
