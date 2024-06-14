@@ -34,5 +34,7 @@ public class EditUserDto
     
     public Gender? Gender { get; init; }
     
+    public UserStatus? UserStatus { get; init; }
+    
     private DateTime? _birthday;
 }

@@ -53,4 +53,19 @@ public sealed class FriendService: IFriendService
         await _context.SaveChangesAsync();
         return Result.Success();
     }
+
+    public Task<Result<FriendDto>> GetFriend(Guid friendId, Guid userId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<Result> FreezeLocationAsync(Guid friendId, Guid userId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<Result> UnFreezeLocationAsync(Guid friendId, Guid userId)
+    {
+        throw new NotImplementedException();
+    }
 }

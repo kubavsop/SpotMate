@@ -70,6 +70,7 @@ public class ProfileService: IProfileService
         user.FullName = dto.FullName;
         user.Birthday = dto.Birthday;
         user.Gender = dto.Gender;
+        user.UserStatus = dto.UserStatus;
         
         var interestsResult = await ChangeInterests(user, dto.Interests.Distinct().ToList());
         if (interestsResult.IsFailure) return interestsResult.Exception;

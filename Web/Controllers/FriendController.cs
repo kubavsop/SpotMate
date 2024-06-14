@@ -25,6 +25,27 @@ public sealed class FriendController: BaseController
         return result.ToIActionResult();
     }
 
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<FriendDto>> GetFriend(Guid id)
+    {
+        var result = await _friendService.GetFriend(id, UserId);
+        return result.ToIActionResult();
+    }
+    
+    [HttpPost("{id:guid}/freeze-location")]
+    public async Task<IActionResult> FreezeLocation(Guid id)
+    {
+        var result = await _friendService.FreezeLocationAsync(id, UserId);
+        return result.ToIActionResult();
+    }
+    
+    [HttpPost("{id:guid}/unfreeze-location")]
+    public async Task<IActionResult> UnFreezeLocation(Guid id)
+    {
+        var result = await _friendService.UnFreezeLocationAsync(id, UserId);
+        return result.ToIActionResult();    
+    }
+    
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteFriend(Guid id)
     {
