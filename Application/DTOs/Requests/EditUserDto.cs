@@ -9,7 +9,8 @@ public class EditUserDto
 {
     [MinLength(1)]
     [MaxLength(1000)]
-    public string? FullName { get; init; }
+    [Required]
+    public required string FullName { get; init; }
     
     [Required]
     [MaxLength(10)]

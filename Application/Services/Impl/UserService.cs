@@ -21,7 +21,7 @@ public class UserService: IUserService
         _mapper = mapper;
     }
 
-    public async Task<Result<IEnumerable<UserShortDto>>> GetNonFriendsUsersAsync(UserSearchParameters searchParameters, Guid userId)
+    public async Task<Result<IEnumerable<NonFriendDto>>> GetNonFriendsUsersAsync(UserSearchParameters searchParameters, Guid userId)
     {
         var normalizedUserName = searchParameters.UserName?.ToUpper();
 
@@ -43,11 +43,23 @@ public class UserService: IUserService
             .Where(u => normalizedUserName == null || u.NormalizedUserName!.Contains(normalizedUserName))
             .Where(u => searchParameters.Interests == null || u.Interests.Select(i => i.Id).Intersect(searchParameters.Interests).Any())
             .Where(u => !searchParameters.IsInterestMatch || myInterests.Count == 0 || u.Interests.Select(i => i.Id).Intersect(myInterests).Any())
+            .Select(u => new NonFriendDto
+            {
+                HasFriendRequest = u.SentRequests.Any(r => r.ReceiverUserId == userId) || u.ReceivedRequests.Any(r => r.SenderUserId == userId),
+                UserShort = new UserShortDto
+                {
+                    Id = u.Id,
+                    Avatar = u.AvatarFileName != null ? $"http://89.111.175.47:8080/static/{u.AvatarFileName}" : null,
+                    FullName = u.FullName,
+                    UserName = u.UserName,
+                    UserStatus = u.UserStatus
+                }
+            })
             .Skip(searchParameters.Offset)
             .Take(searchParameters.Limit)
             .ToListAsync();
 
-        return _mapper.Map<List<UserShortDto>>(users);
+        return users;
     }
 
     public async Task<Result> CreateFriendRequest(Guid senderUserId, Guid receiverUserId)

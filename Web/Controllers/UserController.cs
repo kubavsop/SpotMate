@@ -19,7 +19,7 @@ public sealed class UserController: BaseController
     }
     
     [HttpGet("non-friends")]
-    public async Task<ActionResult<IEnumerable<UserShortDto>>> GetUsers([FromQuery] UserSearchParameters searchParameters)
+    public async Task<ActionResult<IEnumerable<NonFriendDto>>> GetUsers([FromQuery] UserSearchParameters searchParameters)
     {
         var result = await _userService.GetNonFriendsUsersAsync(searchParameters, UserId);
         return result.ToIActionResult();

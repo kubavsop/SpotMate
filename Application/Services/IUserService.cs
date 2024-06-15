@@ -6,7 +6,7 @@ namespace SpotMate.Application.Services;
 
 public interface IUserService
 {
-    Task<Result<IEnumerable<UserShortDto>>> GetNonFriendsUsersAsync(UserSearchParameters searchParameters, Guid userId);
+    Task<Result<IEnumerable<NonFriendDto>>> GetNonFriendsUsersAsync(UserSearchParameters searchParameters, Guid userId);
     Task<Result> CreateFriendRequest(Guid senderUserId, Guid receiverUserId);
     Task<Result<UserFullDto>> GetUserByIdAsync(Guid userId);
     Task<Result> MakeVisibleAsync(Guid userId);
