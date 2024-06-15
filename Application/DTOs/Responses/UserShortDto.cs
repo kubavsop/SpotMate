@@ -6,7 +6,7 @@ using SpotMate.Domain.Enums;
 
 namespace SpotMate.Application.DTOs.Responses;
 
-public sealed class UserShortDto: IMapFrom<SpotMateUser>
+public class UserShortDto: IMapFrom<SpotMateUser>
 {
     [Required]
     public Guid Id { get; init; }

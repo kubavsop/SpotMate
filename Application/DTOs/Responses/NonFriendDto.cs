@@ -2,11 +2,8 @@
 
 namespace SpotMate.Application.DTOs.Responses;
 
-public sealed class NonFriendDto
+public sealed class NonFriendDto: UserShortDto
 {
-    [Required]
-    public required UserShortDto UserShort { get; set; }
-    
     [Required]
     public required bool HasFriendRequest { get; set; }
 }
