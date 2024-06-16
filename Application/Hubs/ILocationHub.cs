@@ -1,6 +1,6 @@
 ﻿using SpotMate.Application.DTOs.HubModels;
 
-namespace SpotMate.Web.Hubs;
+namespace SpotMate.Application.Hubs;
 
 public interface ILocationHub
 {

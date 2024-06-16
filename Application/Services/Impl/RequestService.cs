@@ -1,9 +1,14 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using SpotMate.Application.Context;
+using SpotMate.Application.DTOs.HubModels;
 using SpotMate.Application.DTOs.Requests;
 using SpotMate.Application.DTOs.Responses;
 using SpotMate.Application.Exceptions;
+using SpotMate.Application.Hubs;
+using SpotMate.Application.Hubs.Impl;
 using SpotMate.Application.OperationResult;
 using SpotMate.Domain.Entities;
 using SpotMate.Domain.Enums;
@@ -12,20 +17,24 @@ namespace SpotMate.Application.Services.Impl;
 
 public sealed class RequestService: IRequestService
 {
+    private readonly IDistributedCache _cache;
+    private readonly IHubContext<LocationHub, ILocationHub> _hubContext; 
     private readonly IApplicationDbContext _context;
     private readonly IMapper _mapper;
 
-    public RequestService(IApplicationDbContext context, IMapper mapper)
+    public RequestService(IApplicationDbContext context, IMapper mapper, IDistributedCache cache, IHubContext<LocationHub, ILocationHub> hubContext)
     {
         _context = context;
         _mapper = mapper;
+        _cache = cache;
+        _hubContext = hubContext;
     }
 
     public async Task<Result> AcceptRequestAsync(Guid requestId, Guid userId)
     {
         var request = await _context.FriendRequests.FirstOrDefaultAsync(fr => fr.Id == requestId);
         if (request == null) return new NotFoundException(nameof(FriendRequest), requestId);
-
+        
         if (request.ReceiverUserId != userId)
         {
             return new ForbiddenException(userId);
@@ -43,9 +52,27 @@ public sealed class RequestService: IRequestService
             FriendId = request.SenderUserId
         });
 
+        var receiverId = request.ReceiverUserId;
+        var senderId = request.SenderUserId;
+        
         _context.FriendRequests.Remove(request);
-
+        
         await _context.SaveChangesAsync();
+        
+        var receiverConnectionId = await _cache.GetStringAsync(receiverId.ToString());
+        var senderConnectionId = await _cache.GetStringAsync(senderId.ToString());
+
+        if (receiverConnectionId != null)
+        {
+            var senderUser = (await _context.Users.FirstOrDefaultAsync(u => u.Id == senderId))!;
+            await _hubContext.Clients.Client(receiverConnectionId).ReceiveAddedFriendAsync(_mapper.Map<UserLocationModel>(senderUser));
+        }
+
+        if (senderConnectionId != null)
+        {
+            var receiverUser = (await _context.Users.FirstOrDefaultAsync(u => u.Id == receiverId))!;
+            await _hubContext.Clients.Client(senderConnectionId).ReceiveAddedFriendAsync(_mapper.Map<UserLocationModel>(receiverUser));
+        }
 
         return Result.Success();
     }

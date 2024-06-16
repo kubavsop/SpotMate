@@ -1,9 +1,9 @@
 using Microsoft.Extensions.FileProviders;
 using SpotMate.Application;
+using SpotMate.Application.Hubs.Impl;
 using SpotMate.Infrastructure;
 using SpotMate.Persistence;
 using SpotMate.Web;
-using SpotMate.Web.Hubs.Impl;
 using SpotMate.Web.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);

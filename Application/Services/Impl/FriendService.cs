@@ -1,22 +1,30 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using SpotMate.Application.Context;
 using SpotMate.Application.DTOs.Requests;
 using SpotMate.Application.DTOs.Responses;
 using SpotMate.Application.Exceptions;
+using SpotMate.Application.Hubs;
+using SpotMate.Application.Hubs.Impl;
 using SpotMate.Application.OperationResult;
 
 namespace SpotMate.Application.Services.Impl;
 
 public sealed class FriendService: IFriendService
 {
+    private readonly IDistributedCache _cache;
+    private readonly IHubContext<LocationHub, ILocationHub> _hubContext; 
     private readonly IApplicationDbContext _context;
     private readonly IMapper _mapper;
 
-    public FriendService(IApplicationDbContext context, IMapper mapper)
+    public FriendService(IApplicationDbContext context, IMapper mapper, IDistributedCache cache, IHubContext<LocationHub, ILocationHub> hubContext)
     {
         _context = context;
         _mapper = mapper;
+        _cache = cache;
+        _hubContext = hubContext;
     }
 
     public async Task<Result<IEnumerable<UserShortDto>>> GetFriendsAsync(UserShortSearchParameters userShortSearchParameters, Guid userId)
@@ -49,8 +57,22 @@ public sealed class FriendService: IFriendService
 
         _context.UserFriends.Remove(firstUserFriend);
         _context.UserFriends.Remove(secondUserFriend);
-
+        
         await _context.SaveChangesAsync();
+        
+        var friendConnectionId = await _cache.GetStringAsync(friendId.ToString());
+        var userConnectionId = await _cache.GetStringAsync(userId.ToString());
+
+        if (friendConnectionId != null)
+        {
+            await _hubContext.Clients.Client(friendConnectionId).ReceiveDeletedFriendIdAsync(userId);
+        }
+
+        if (userConnectionId != null)
+        {
+            await _hubContext.Clients.Client(userConnectionId).ReceiveDeletedFriendIdAsync(friendId);
+        }
+        
         return Result.Success();
     }
 

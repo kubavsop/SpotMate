@@ -7,7 +7,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using SpotMate.Application.Context;
 using SpotMate.Application.DTOs.HubModels;
 
-namespace SpotMate.Web.Hubs.Impl;
+namespace SpotMate.Application.Hubs.Impl;
 
 [Authorize]
 public sealed class LocationHub: Hub<ILocationHub>
