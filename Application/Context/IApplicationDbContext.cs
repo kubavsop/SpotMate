@@ -6,7 +6,6 @@ namespace SpotMate.Application.Context;
 
 public interface IApplicationDbContext
 {
-    DbSet<Coordinate> Coordinates { get; }
     DbSet<DailyStep> DailySteps { get; }
     DbSet<FriendRequest> FriendRequests { get; }
     DbSet<UserFriend> UserFriends { get; }

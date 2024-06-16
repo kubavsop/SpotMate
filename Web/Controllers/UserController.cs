@@ -38,18 +38,4 @@ public sealed class UserController: BaseController
         var result = await _userService.CreateFriendRequest(UserId, id);
         return result.ToIActionResult();
     }
-
-    [HttpPost("invisible")]
-    public async Task<IActionResult> MakeInvisible()
-    {
-        var result  = await _userService.MakeInvisibleAsync(UserId);
-        return result.ToIActionResult();
-    }
-    
-    [HttpPost("visible")]
-    public async Task<IActionResult> MakeVisible()
-    {
-        var result  = await _userService.MakeVisibleAsync(UserId);
-        return result.ToIActionResult();    
-    }
 }

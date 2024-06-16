@@ -110,6 +110,31 @@ public class ProfileService: IProfileService
         await _context.SaveChangesAsync();
         return Result.Success();
     }
+    
+    public Task<Result> MakeVisibleAsync(Guid userId)
+    {
+        return ChangeVisibility(userId, false);
+    }
+
+    public Task<Result> MakeInvisibleAsync(Guid userId)
+    {
+        return ChangeVisibility(userId, true);
+    }
+
+    private async Task<Result> ChangeVisibility(Guid userId, bool isInvisible)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null)
+        {
+            return new NotFoundException(nameof(SpotMateUser), userId);
+        }
+
+        user.IsInvisible = isInvisible;
+        
+        await _context.SaveChangesAsync();
+        
+        return Result.Success();
+    }
 
     private async Task<Result> ChangeInterests(SpotMateUser user, List<Guid> interests)
     {

@@ -10,4 +10,6 @@ public interface IProfileService
     Task<Result> EditProfileAsync(EditUserDto dto, Guid userId);
     Task<Result> UploadAvatarAsync(UploadAvatarDto uploadAvatarDto, Guid userId);
     Task<Result> DeleteAvatarAsync(Guid userId);
+    Task<Result> MakeVisibleAsync(Guid userId);
+    Task<Result> MakeInvisibleAsync(Guid userId);
 }

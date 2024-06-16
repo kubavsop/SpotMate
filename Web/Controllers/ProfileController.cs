@@ -45,4 +45,18 @@ public sealed class ProfileController: BaseController
         var result = await _profileService.DeleteAvatarAsync(UserId);
         return result.ToIActionResult();
     }
+    
+    [HttpPost("invisible")]
+    public async Task<IActionResult> MakeInvisible()
+    {
+        var result  = await _profileService.MakeInvisibleAsync(UserId);
+        return result.ToIActionResult();
+    }
+    
+    [HttpPost("visible")]
+    public async Task<IActionResult> MakeVisible()
+    {
+        var result  = await _profileService.MakeVisibleAsync(UserId);
+        return result.ToIActionResult();    
+    }
 }

@@ -3,6 +3,7 @@ using SpotMate.Application;
 using SpotMate.Infrastructure;
 using SpotMate.Persistence;
 using SpotMate.Web;
+using SpotMate.Web.Hubs.Impl;
 using SpotMate.Web.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -51,4 +52,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHub<LocationHub>("location-hub");
+
 app.Run();

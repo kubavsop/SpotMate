@@ -9,6 +9,7 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddPresentationLayer(this IServiceCollection services)
     {
+        services.AddSignalR();
         services.AddControllers(options =>
             {
                 options.OutputFormatters.RemoveType<HttpNoContentOutputFormatter>();
