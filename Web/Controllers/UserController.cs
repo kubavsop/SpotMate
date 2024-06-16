@@ -28,7 +28,7 @@ public sealed class UserController: BaseController
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<UserFullDto>> GetUser(Guid id)
     {
-        var result = await _userService.GetUserByIdAsync(id);
+        var result = await _userService.GetUserByIdAsync(id, UserId);
         return result.ToIActionResult();
     }
 

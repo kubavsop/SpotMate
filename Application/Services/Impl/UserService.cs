@@ -15,6 +15,7 @@ public class UserService: IUserService
 {
     private readonly IApplicationDbContext _context;
     private readonly IMapper _mapper;
+    private const string BaseUrl = "http://89.111.175.47:8080/static/";
 
     public UserService(IApplicationDbContext context, IMapper mapper)
     {
@@ -48,7 +49,7 @@ public class UserService: IUserService
             {
                 HasFriendRequest = u.SentRequests.Any(r => r.ReceiverUserId == userId) || u.ReceivedRequests.Any(r => r.SenderUserId == userId),
                 Id = u.Id,
-                Avatar = u.AvatarFileName != null ? $"http://89.111.175.47:8080/static/{u.AvatarFileName}" : null,
+                Avatar = u.AvatarFileName != null ? $"{BaseUrl}{u.AvatarFileName}" : null,
                 FullName = u.FullName,
                 UserName = u.UserName,
                 UserStatus = u.UserStatus
@@ -91,7 +92,7 @@ public class UserService: IUserService
         return Result.Success();
     }
 
-    public async Task<Result<UserFullDto>> GetUserByIdAsync(Guid userId)
+    public async Task<Result<UserFullDto>> GetUserByIdAsync(Guid userId, Guid myId)
     {
         var user = await _context.Users
             .Include(u => u.Interests)
@@ -102,7 +103,12 @@ public class UserService: IUserService
             return new NotFoundException(nameof(SpotMateUser), userId);
         }
 
-        return _mapper.Map<UserFullDto>(user);
+        var userFull = _mapper.Map<UserFullDto>(user);
+        userFull.HasFriendRequest = await _context.Users.AnyAsync(u =>
+            u.Id == userId && (u.SentRequests.Any(r => r.ReceiverUserId == myId) ||
+                               u.ReceivedRequests.Any(r => r.SenderUserId == myId)));
+        
+        return userFull;
     }
 
     public async Task<Result> DeleteUserRequest(Guid senderUserId, Guid receiverUserId)
