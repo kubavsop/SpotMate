@@ -21,7 +21,8 @@ FROM base AS final
 ENV ASPNETCORE_ENVIRONMENT=Development
 WORKDIR /app
 
-COPY ./StaticFiles /app/StaticFiles
+RUN mkdir /app/StaticFiles
+COPY ./Static /app/StaticFiles
 RUN chmod -R 755 /app/StaticFiles
 
 COPY --from=publish /app/publish .
