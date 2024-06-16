@@ -11,7 +11,7 @@
     depends_on:
       - db
     volumes:
-      - ./Static:/app/Static
+      - ./Static:/app/StaticFiles
 
   db:
     container_name: postgres
