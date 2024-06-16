@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using AutoMapper;
+using SpotMate.Application.DTOs.HubModels;
 using SpotMate.Application.Mapping;
 using SpotMate.Domain.Entities;
 using SpotMate.Domain.Enums;
-using SpotMate.Web.Hubs.Models;
 
 namespace SpotMate.Application.DTOs.Responses;
 

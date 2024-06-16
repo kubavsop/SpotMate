@@ -1,4 +1,4 @@
-﻿namespace SpotMate.Web.Hubs.Models;
+﻿namespace SpotMate.Application.DTOs.HubModels;
 
 public sealed class CoordinatesModel
 {

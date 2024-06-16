@@ -1,6 +1,6 @@
 ﻿using SpotMate.Application.DTOs.Responses;
 
-namespace SpotMate.Web.Hubs.Models;
+namespace SpotMate.Application.DTOs.HubModels;
 
 public sealed class UserLocationModel: UserShortDto
 {

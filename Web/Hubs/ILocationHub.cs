@@ -1,8 +1,9 @@
-﻿using SpotMate.Web.Hubs.Models;
+﻿using SpotMate.Application.DTOs.HubModels;
 
 namespace SpotMate.Web.Hubs;
 
 public interface ILocationHub
 {
-    public Task GetFriendsLocation(IEnumerable<UserLocationModel> users);
+    Task ReceiveFriendsLocation(IEnumerable<UserLocationModel> friends);
+    Task ReceiveFriendLocationChanged(UserLocationModel friend);
 }

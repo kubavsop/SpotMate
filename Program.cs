@@ -23,6 +23,7 @@ var app = builder.Build();
 
 await app.Services.AddAutoMigrationAsync();
 await app.Services.EnsureInterestTypesCreatedAsync();
+await app.Services.EnsureDefaultUsersCreatedAsync();
 
 app.UseExceptionHandlingMiddleware();
 
@@ -53,6 +54,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapHub<LocationHub>("location-hub");
+app.MapHub<LocationHub>("location");
 
 app.Run();
