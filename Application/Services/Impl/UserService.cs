@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.EntityFrameworkCore;
 using SpotMate.Application.Context;
 using SpotMate.Application.DTOs.Requests;
@@ -102,5 +103,17 @@ public class UserService: IUserService
         }
 
         return _mapper.Map<UserFullDto>(user);
+    }
+
+    public async Task<Result> DeleteUserRequest(Guid senderUserId, Guid receiverUserId)
+    {
+        var request = await _context.FriendRequests.FirstOrDefaultAsync(fr => fr.SenderUserId == senderUserId && fr.ReceiverUserId == receiverUserId);
+        if (request == null) return new NotFoundException(nameof(FriendRequest));
+        
+        _context.FriendRequests.Remove(request);
+
+        await _context.SaveChangesAsync();
+        
+        return Result.Success();
     }
 }

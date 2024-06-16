@@ -16,7 +16,8 @@ public class UserShortDto: IMapFrom<SpotMateUser>
     public required string UserName { get; init; }
     public string? Avatar { get; set; }
     
-    public string? FullName { get;  set; }
+    [Required]
+    public required string FullName { get;  set; }
     
     public UserStatus? UserStatus { get; set; }
     

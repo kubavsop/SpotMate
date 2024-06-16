@@ -22,8 +22,9 @@ public sealed class LocationHub: Hub<ILocationHub>
     
     public override async Task OnConnectedAsync()
     {
-        var friends = await _locationService.HandleOnConnectedAsync(UserId);
+        var friends = await _locationService.HandleOnConnectedAsync(UserId, Context.ConnectionId);
         await Clients.Client(Context.ConnectionId).ReceiveFriendsLocation(friends);
+        await base.OnConnectedAsync();
     }
 
     public async Task UpdateLocation(CoordinatesModel coordinates)
@@ -31,9 +32,10 @@ public sealed class LocationHub: Hub<ILocationHub>
         throw new NotImplementedException();
     }
     
-    public override Task OnDisconnectedAsync(Exception? exception)
+    public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        return _locationService.HandleOnDisconnectedAsync(UserId);
+        await _locationService.HandleOnDisconnectedAsync(UserId);
+        await base.OnDisconnectedAsync(exception);
     }
     
     private Guid UserId

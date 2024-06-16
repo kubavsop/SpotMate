@@ -22,6 +22,13 @@
       - "5432"
     networks:
       - my-net
+    
+  redis:
+    image: redis
+    ports:
+      - "127.0.0.1:6379:6379"
+    networks:
+      - my-net
 
 networks:
   my-net:

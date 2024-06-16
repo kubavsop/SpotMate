@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using SpotMate.Application.Context;
 using SpotMate.Application.DTOs.HubModels;
 
@@ -9,15 +10,18 @@ public sealed class LocationService: ILocationService
 {
     private readonly IApplicationDbContext _context;
     private readonly IMapper _mapper;
+    private readonly IDistributedCache _cache;
 
-    public LocationService(IApplicationDbContext context, IMapper mapper)
+    public LocationService(IApplicationDbContext context, IMapper mapper, IDistributedCache cache)
     {
         _context = context;
         _mapper = mapper;
+        _cache = cache;
     }
 
-    public async Task<IEnumerable<UserLocationModel>> HandleOnConnectedAsync(Guid userId)
+    public async Task<IEnumerable<UserLocationModel>> HandleOnConnectedAsync(Guid userId, string connectionId)
     {
+        await _cache.SetStringAsync(userId.ToString(), connectionId);
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
 
         if (user == null)

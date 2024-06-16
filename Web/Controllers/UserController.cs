@@ -38,4 +38,11 @@ public sealed class UserController: BaseController
         var result = await _userService.CreateFriendRequest(UserId, id);
         return result.ToIActionResult();
     }
+
+    [HttpDelete("{id:guid}/request")]
+    public async Task<IActionResult> DeleteFriendRequest(Guid id)
+    {
+        var result = await _userService.DeleteUserRequest(UserId, id);
+        return result.ToIActionResult();
+    }
 }

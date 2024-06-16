@@ -18,6 +18,11 @@ public static class DependencyInjection
         services.AddScoped<IUserService, UserService>();
         services.AddAutoMapper(typeof(ConventionalMappingProfile).Assembly);
         services.Configure<RefreshTokenOptions>(configuration.GetSection("RefreshToken"));
+        services.AddStackExchangeRedisCache(options =>
+        {
+            var connection = configuration.GetConnectionString("Redis");
+            options.Configuration = connection;
+        });
         return services;
     }
 }
