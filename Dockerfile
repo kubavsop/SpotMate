@@ -20,5 +20,9 @@ RUN dotnet publish "SpotMate.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:
 FROM base AS final
 ENV ASPNETCORE_ENVIRONMENT=Development
 WORKDIR /app
+
+COPY ./StaticFiles /app/StaticFiles
+RUN chmod -R 755 /app/StaticFiles
+
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "SpotMate.dll"]
