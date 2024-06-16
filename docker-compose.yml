@@ -10,8 +10,6 @@
       - my-net
     depends_on:
       - db
-    volumes:
-      - ./Static:/app/StaticFiles
 
   db:
     container_name: postgres

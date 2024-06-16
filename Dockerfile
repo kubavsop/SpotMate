@@ -21,8 +21,5 @@ FROM base AS final
 ENV ASPNETCORE_ENVIRONMENT=Development
 WORKDIR /app
 
-RUN mkdir /app/StaticFiles
-RUN chmod -R 755 /app/StaticFiles
-
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "SpotMate.dll"]
