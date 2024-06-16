@@ -9,7 +9,6 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplicationLayer(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddScoped<ILocationService, LocationService>();
         services.AddScoped<IFriendService, FriendService>();
         services.AddScoped<IRequestService, RequestService>();
         services.AddScoped<IInterestService, InterestService>();

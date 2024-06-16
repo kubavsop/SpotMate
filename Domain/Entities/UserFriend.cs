@@ -10,4 +10,8 @@ public sealed class UserFriend: BaseEntity
     public SpotMateUser Friend  { get; set; } = null!;
 
     public bool IsLocationFrozen { get; set; } = false;
+    
+    public double? Latitude { get; set; }
+    
+    public double? Longitude { get; set; }
 }

@@ -3,38 +3,101 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using SpotMate.Application.Context;
 using SpotMate.Application.DTOs.HubModels;
-using SpotMate.Application.Services;
 
 namespace SpotMate.Web.Hubs.Impl;
 
 [Authorize]
 public sealed class LocationHub: Hub<ILocationHub>
 {
-    private readonly ILocationService _locationService;
+    private const string BaseUrl = "http://89.111.175.47:8080/static/";
+    private readonly IApplicationDbContext _context;
+    private readonly IMapper _mapper;
+    private readonly IDistributedCache _cache;
 
-    public LocationHub(ILocationService locationService)
+    public LocationHub(IDistributedCache cache, IApplicationDbContext context, IMapper mapper)
     {
-
-        _locationService = locationService;
+        _cache = cache;
+        _context = context;
+        _mapper = mapper;
     }
     
     public override async Task OnConnectedAsync()
     {
-        var friends = await _locationService.HandleOnConnectedAsync(UserId, Context.ConnectionId);
-        await Clients.Client(Context.ConnectionId).ReceiveFriendsLocation(friends);
+        var userId = UserId;
+        await _cache.SetStringAsync(userId.ToString(), Context.ConnectionId);
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user == null)
+        {
+            return;
+        }
+
+        user.LastOnline = null;
+        await _context.SaveChangesAsync();
+        
+        var friends = await _context.UserFriends
+            .AsNoTracking()
+            .Where(u => u.FriendId == userId)
+            .Select(u => new UserLocationModel
+            {
+                Id = u.UserId,
+                UserName = u.User.UserName,
+                Avatar = $"{BaseUrl}{u.Friend.AvatarFileName}",
+                FullName = u.User.FullName,
+                UserStatus = u.User.UserStatus,
+                LastOnline = u.User.LastOnline,
+                Coordinates = u.IsLocationFrozen ? new CoordinatesModel{Latitude = u.Latitude!.Value, Longitude = u.Longitude!.Value} : new CoordinatesModel{Latitude = u.User.Latitude, Longitude = u.User.Longitude}
+            })
+            .ToListAsync();
+
+        await Clients.Client(Context.ConnectionId).ReceiveFriendsLocationAsync( _mapper.Map<List<UserLocationModel>>(friends));
         await base.OnConnectedAsync();
     }
 
     public async Task UpdateLocation(CoordinatesModel coordinates)
     {
-        throw new NotImplementedException();
+        var userId = UserId;
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null || user.IsInvisible)
+        {
+            return;
+        }
+
+        user.Latitude = coordinates.Latitude;
+        user.Longitude = coordinates.Longitude;
+        await _context.SaveChangesAsync();
+
+        var userLocationModel = _mapper.Map<UserLocationModel>(user);
+        var friendsToNotify = await _context.UserFriends
+            .AsNoTracking()
+            .Where(u => u.UserId == userId && !u.IsLocationFrozen)
+            .Select(u => u.Friend.Id)
+            .ToListAsync();
+        
+        foreach (var id in friendsToNotify)
+        {
+            var friendConnectionId = await _cache.GetStringAsync(id.ToString());
+            if (friendConnectionId == null) continue;
+            await Clients.Client(friendConnectionId).ReceiveFriendLocationChangedAsync(userLocationModel);
+        }
     }
     
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        await _locationService.HandleOnDisconnectedAsync(UserId);
+        var userId = UserId;
+        await _cache.RemoveAsync(userId.ToString());
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user == null)
+        {
+            return;
+        }
+        
+        user.LastOnline = DateTime.UtcNow;
+        await _context.SaveChangesAsync();        
         await base.OnDisconnectedAsync(exception);
     }
     

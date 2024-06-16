@@ -72,17 +72,31 @@ public sealed class FriendService: IFriendService
         return friend;
     }
 
-    public Task<Result> FreezeLocationAsync(Guid friendId, Guid userId)
+    public async Task<Result> FreezeLocationAsync(Guid friendId, Guid userId)
     {
-        return ChangeIsLocationFrozen(friendId, userId, true);
+        var userFriend = await _context.UserFriends
+            .Include(uf => uf.User)
+            .FirstOrDefaultAsync(uf => uf.UserId == userId && uf.FriendId == friendId);
+        
+        if (userFriend == null)
+        {
+            return new BadRequestException("The user is not your friend");
+        }
+        
+        if (userFriend.IsLocationFrozen)
+        {
+            return new BadRequestException("The location is already frozen");
+        }
+
+        userFriend.Latitude = userFriend.User.Latitude;
+        userFriend.Longitude = userFriend.User.Longitude;
+        userFriend.IsLocationFrozen = true;
+        await _context.SaveChangesAsync();
+
+        return Result.Success();    
     }
 
-    public Task<Result> UnFreezeLocationAsync(Guid friendId, Guid userId)
-    {
-        return ChangeIsLocationFrozen(friendId, userId, false);
-    }
-
-    private async Task<Result> ChangeIsLocationFrozen(Guid friendId, Guid userId, bool isLocationFrozen)
+    public async Task<Result> UnFreezeLocationAsync(Guid friendId, Guid userId)
     {
         var userFriend = await _context.UserFriends
             .FirstOrDefaultAsync(uf => uf.UserId == userId && uf.FriendId == friendId);
@@ -92,9 +106,17 @@ public sealed class FriendService: IFriendService
             return new BadRequestException("The user is not your friend");
         }
 
-        userFriend.IsLocationFrozen = isLocationFrozen;
+        if (!userFriend.IsLocationFrozen)
+        {
+            return new BadRequestException("The location is already unfrozen");
+        }
+
+        userFriend.Latitude = null;
+        userFriend.Longitude = null;
+        userFriend.IsLocationFrozen = false;
         await _context.SaveChangesAsync();
 
-        return Result.Success();
+        return Result.Success();    
     }
+    
 }
