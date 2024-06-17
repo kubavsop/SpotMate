@@ -95,7 +95,11 @@ public class UserService: IUserService
     public async Task<Result<UserFullDto>> GetUserByIdAsync(Guid userId, Guid myId)
     {
         var user = await _context.Users
+            .AsNoTracking()
+            .AsSplitQuery()
             .Include(u => u.Interests)
+            .Include(u => u.SentRequests)
+            .Include(u => u.ReceivedRequests)
             .FirstOrDefaultAsync(u => u.Id == userId);
         
         if (user == null)
@@ -104,9 +108,9 @@ public class UserService: IUserService
         }
 
         var userFull = _mapper.Map<UserFullDto>(user);
-        userFull.HasFriendRequest = await _context.Users.AnyAsync(u =>
-            u.Id == userId && (u.SentRequests.Any(r => r.ReceiverUserId == myId) ||
-                               u.ReceivedRequests.Any(r => r.SenderUserId == myId)));
+        userFull.HasMyFriendRequest = user.ReceivedRequests.Any(r => r.SenderUserId == myId)
+            ? true
+            : (user.SentRequests.Any(r => r.ReceiverUserId == myId) ? false : null);
         
         return userFull;
     }
