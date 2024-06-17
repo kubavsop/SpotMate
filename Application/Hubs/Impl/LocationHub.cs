@@ -24,36 +24,9 @@ public sealed class LocationHub: Hub<ILocationHub>
         _mapper = mapper;
     }
     
-    public override async Task OnConnectedAsync()
+    public override  Task OnConnectedAsync()
     {
-        var userId = UserId;
-        await _cache.SetStringAsync(userId.ToString(), Context.ConnectionId);
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
-
-        if (user == null)
-        {
-            return;
-        }
-
-        user.LastOnline = null;
-        await _context.SaveChangesAsync();
-        
-        var friends = await _context.UserFriends
-            .AsNoTracking()
-            .Where(u => u.FriendId == userId)
-            .Select(u => new UserLocationModel
-            {
-                Id = u.UserId,
-                UserName = u.User.UserName,
-                Avatar = $"{BaseUrl}{u.Friend.AvatarFileName}",
-                FullName = u.User.FullName,
-                UserStatus = u.User.UserStatus,
-                LastOnline = u.User.LastOnline,
-                Coordinates = u.IsLocationFrozen ? new CoordinatesModel{Latitude = u.Latitude!.Value, Longitude = u.Longitude!.Value} : new CoordinatesModel{Latitude = u.User.Latitude, Longitude = u.User.Longitude}
-            })
-            .ToListAsync();
-
-        await Clients.Client(Context.ConnectionId).ReceiveFriendsLocationAsync( _mapper.Map<List<UserLocationModel>>(friends));
+        return base.OnConnectedAsync();
     }
 
     public async Task UpdateLocation(CoordinatesModel coordinates)
@@ -97,6 +70,7 @@ public sealed class LocationHub: Hub<ILocationHub>
         
         user.LastOnline = DateTime.UtcNow;
         await _context.SaveChangesAsync();        
+        await base.OnDisconnectedAsync(exception);
     }
     
     private Guid UserId
