@@ -47,7 +47,7 @@ public class UserService: IUserService
             .Where(u => !searchParameters.IsInterestMatch || myInterests.Count == 0 || u.Interests.Select(i => i.Id).Intersect(myInterests).Any())
             .Select(u => new NonFriendDto
             {
-                HasFriendRequest = u.SentRequests.Any(r => r.ReceiverUserId == userId) || u.ReceivedRequests.Any(r => r.SenderUserId == userId),
+                HasMyFriendRequest = u.ReceivedRequests.Any(r => r.SenderUserId == userId) ? true : (u.SentRequests.Any(r => r.ReceiverUserId == userId) ? false : null),
                 Id = u.Id,
                 Avatar = u.AvatarFileName != null ? $"{BaseUrl}{u.AvatarFileName}" : null,
                 FullName = u.FullName,
