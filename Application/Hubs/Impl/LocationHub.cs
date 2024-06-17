@@ -54,7 +54,6 @@ public sealed class LocationHub: Hub<ILocationHub>
             .ToListAsync();
 
         await Clients.Client(Context.ConnectionId).ReceiveFriendsLocationAsync( _mapper.Map<List<UserLocationModel>>(friends));
-        await base.OnConnectedAsync();
     }
 
     public async Task UpdateLocation(CoordinatesModel coordinates)
@@ -98,7 +97,6 @@ public sealed class LocationHub: Hub<ILocationHub>
         
         user.LastOnline = DateTime.UtcNow;
         await _context.SaveChangesAsync();        
-        await base.OnDisconnectedAsync(exception);
     }
     
     private Guid UserId
