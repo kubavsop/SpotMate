@@ -11,6 +11,7 @@ namespace SpotMate.Application.Services.Impl;
 public class StepService : IStepService
 {
     private readonly IApplicationDbContext _context;
+    private const string BaseUrl = "http://89.111.175.47:8080/static/";
 
     public StepService(IApplicationDbContext context)
     {
@@ -78,13 +79,23 @@ public class StepService : IStepService
 
         var rating = user.Friends.Select(f => new StepDto
         {
-            UserId = f.FriendId,
+            Id = f.FriendId,
+            UserName = f.Friend.UserName,
+            Avatar = f.Friend.AvatarFileName != null ? $"{BaseUrl}{f.Friend.AvatarFileName}" : null,
+            FullName = f.Friend.FullName,
+            UserStatus = f.Friend.UserStatus,
+            LastOnline = f.Friend.LastOnline,
             StepCount = f.Friend.DailySteps.Where(d => d.Date >= fromDate).Sum(ds => ds.StepCount)
         }).ToList();
         
         rating.Add(new StepDto
         {
-            UserId = user.Id,
+            Id = user.Id,
+            UserName = user.UserName,
+            Avatar = user.AvatarFileName != null ? $"{BaseUrl}{user.AvatarFileName}" : null,
+            FullName = user.FullName,
+            UserStatus = user.UserStatus,
+            LastOnline = user.LastOnline,
             StepCount = user.DailySteps.Where(d => d.Date >= fromDate).Sum(ds => ds.StepCount)
         });
 
