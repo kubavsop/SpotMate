@@ -26,6 +26,11 @@ public static class DependencyInjection
             options.LowercaseQueryStrings = true;
         });
         services.ConfigureOptions<SwaggerGenOptionsConfigure>();
+
+        services.AddCors(options =>
+            options.AddDefaultPolicy(policy => 
+                policy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin())
+            );
         
         return services;
     }
