@@ -10,6 +10,7 @@
       - my-net
     depends_on:
       - db
+      - redis
 
   db:
     container_name: postgres
