@@ -4,5 +4,5 @@ namespace SpotMate.Application.DTOs.HubModels;
 
 public sealed class UserLocationModel: UserShortDto
 {
-    public required CoordinatesModel Coordinates { get; init; }
+    public required CoordinatesModel Coordinate { get; init; }
 }

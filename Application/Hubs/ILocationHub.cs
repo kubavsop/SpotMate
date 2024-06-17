@@ -4,8 +4,8 @@ namespace SpotMate.Application.Hubs;
 
 public interface ILocationHub
 {
-    Task ReceiveFriendsLocationAsync(IEnumerable<UserLocationModel> friends);
-    Task ReceiveFriendLocationChangedAsync(UserLocationModel friend);
-    Task ReceiveAddedFriendAsync(UserLocationModel friend);
-    Task ReceiveDeletedFriendIdAsync(Guid userId);
+    Task ReceiveFriendsLocation(IEnumerable<UserLocationModel> friends);
+    Task ReceiveFriendLocationChanged(UserLocationModel friend);
+    Task ReceiveAddedFriend(UserLocationModel friend);
+    Task ReceiveDeletedFriendId(Guid userId);
 }

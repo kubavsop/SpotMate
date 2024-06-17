@@ -49,11 +49,11 @@ public sealed class LocationHub: Hub<ILocationHub>
                 FullName = u.User.FullName,
                 UserStatus = u.User.UserStatus,
                 LastOnline = u.User.LastOnline,
-                Coordinates = u.IsLocationFrozen ? new CoordinatesModel{Latitude = u.Latitude!.Value, Longitude = u.Longitude!.Value} : new CoordinatesModel{Latitude = u.User.Latitude, Longitude = u.User.Longitude}
+                Coordinate = u.IsLocationFrozen ? new CoordinatesModel{Latitude = u.Latitude!.Value, Longitude = u.Longitude!.Value} : new CoordinatesModel{Latitude = u.User.Latitude, Longitude = u.User.Longitude}
             })
             .ToListAsync();
 
-        await Clients.Client(Context.ConnectionId).ReceiveFriendsLocationAsync( _mapper.Map<List<UserLocationModel>>(friends));
+        await Clients.Client(Context.ConnectionId).ReceiveFriendsLocation( _mapper.Map<List<UserLocationModel>>(friends));
         await base.OnConnectedAsync();
     }
 
@@ -81,7 +81,7 @@ public sealed class LocationHub: Hub<ILocationHub>
         {
             var friendConnectionId = await _cache.GetStringAsync(id.ToString());
             if (friendConnectionId == null) continue;
-            await Clients.Client(friendConnectionId).ReceiveFriendLocationChangedAsync(userLocationModel);
+            await Clients.Client(friendConnectionId).ReceiveFriendLocationChanged(userLocationModel);
         }
     }
     

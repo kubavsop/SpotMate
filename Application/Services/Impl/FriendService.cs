@@ -65,12 +65,12 @@ public sealed class FriendService: IFriendService
 
         if (friendConnectionId != null)
         {
-            await _hubContext.Clients.Client(friendConnectionId).ReceiveDeletedFriendIdAsync(userId);
+            await _hubContext.Clients.Client(friendConnectionId).ReceiveDeletedFriendId(userId);
         }
 
         if (userConnectionId != null)
         {
-            await _hubContext.Clients.Client(userConnectionId).ReceiveDeletedFriendIdAsync(friendId);
+            await _hubContext.Clients.Client(userConnectionId).ReceiveDeletedFriendId(friendId);
         }
         
         return Result.Success();

@@ -49,7 +49,7 @@ public class UserShortDto: IMapFrom<SpotMateUser>
             .ForMember(dest => dest.Avatar,
                 opt => 
                     opt.MapFrom(src => src.AvatarFileName != null ? $"{BaseUrl}{src.AvatarFileName}" : null))
-            .ForMember(dest => dest.Coordinates,
+            .ForMember(dest => dest.Coordinate,
             opt => 
                 opt.MapFrom(src => new CoordinatesModel
                 {

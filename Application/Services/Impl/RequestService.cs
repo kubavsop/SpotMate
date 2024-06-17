@@ -65,13 +65,13 @@ public sealed class RequestService: IRequestService
         if (receiverConnectionId != null)
         {
             var senderUser = (await _context.Users.FirstOrDefaultAsync(u => u.Id == senderId))!;
-            await _hubContext.Clients.Client(receiverConnectionId).ReceiveAddedFriendAsync(_mapper.Map<UserLocationModel>(senderUser));
+            await _hubContext.Clients.Client(receiverConnectionId).ReceiveAddedFriend(_mapper.Map<UserLocationModel>(senderUser));
         }
 
         if (senderConnectionId != null)
         {
             var receiverUser = (await _context.Users.FirstOrDefaultAsync(u => u.Id == receiverId))!;
-            await _hubContext.Clients.Client(senderConnectionId).ReceiveAddedFriendAsync(_mapper.Map<UserLocationModel>(receiverUser));
+            await _hubContext.Clients.Client(senderConnectionId).ReceiveAddedFriend(_mapper.Map<UserLocationModel>(receiverUser));
         }
 
         return Result.Success();
