@@ -1,10 +1,15 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using SpotMate.Application.Context;
+using SpotMate.Application.DTOs.HubModels;
 using SpotMate.Application.DTOs.Requests;
 using SpotMate.Application.DTOs.Responses;
 using SpotMate.Application.Exceptions;
+using SpotMate.Application.Hubs;
+using SpotMate.Application.Hubs.Impl;
 using SpotMate.Application.OperationResult;
 using SpotMate.Domain.Entities;
 using SpotMate.Domain.Enums;
@@ -13,14 +18,18 @@ namespace SpotMate.Application.Services.Impl;
 
 public class UserService: IUserService
 {
+    private readonly IDistributedCache _cache;
+    private readonly IHubContext<LocationHub, ILocationHub> _hubContext; 
     private readonly IApplicationDbContext _context;
     private readonly IMapper _mapper;
     private const string BaseUrl = "http://89.111.175.47:8080/static/";
 
-    public UserService(IApplicationDbContext context, IMapper mapper)
+    public UserService(IApplicationDbContext context, IMapper mapper, IDistributedCache cache, IHubContext<LocationHub, ILocationHub> hubContext)
     {
         _context = context;
         _mapper = mapper;
+        _cache = cache;
+        _hubContext = hubContext;
     }
 
     public async Task<Result<IEnumerable<NonFriendDto>>> GetNonFriendsUsersAsync(UserSearchParameters searchParameters, Guid userId)
@@ -125,5 +134,59 @@ public class UserService: IUserService
         await _context.SaveChangesAsync();
         
         return Result.Success();
+    }
+
+    public async Task<Result> AcceptRequestAsync(Guid userId, Guid myId)
+    {
+        var request = await _context.FriendRequests.FirstOrDefaultAsync(fr => fr.ReceiverUserId == myId && fr.SenderUserId == userId);
+        if (request == null) return new NotFoundException(nameof(FriendRequest));
+
+        await _context.UserFriends.AddAsync(new UserFriend
+        {
+            UserId = request.SenderUserId,
+            FriendId = request.ReceiverUserId
+        });
+        
+        await _context.UserFriends.AddAsync(new UserFriend
+        {
+            UserId = request.ReceiverUserId,
+            FriendId = request.SenderUserId
+        });
+
+        var receiverId = request.ReceiverUserId;
+        var senderId = request.SenderUserId;
+        
+        _context.FriendRequests.Remove(request);
+        
+        await _context.SaveChangesAsync();
+        
+        var receiverConnectionId = await _cache.GetStringAsync(receiverId.ToString());
+        var senderConnectionId = await _cache.GetStringAsync(senderId.ToString());
+
+        if (receiverConnectionId != null)
+        {
+            var senderUser = (await _context.Users.FirstOrDefaultAsync(u => u.Id == senderId))!;
+            await _hubContext.Clients.Client(receiverConnectionId).ReceiveAddedFriendAsync(_mapper.Map<UserLocationModel>(senderUser));
+        }
+
+        if (senderConnectionId != null)
+        {
+            var receiverUser = (await _context.Users.FirstOrDefaultAsync(u => u.Id == receiverId))!;
+            await _hubContext.Clients.Client(senderConnectionId).ReceiveAddedFriendAsync(_mapper.Map<UserLocationModel>(receiverUser));
+        }
+
+        return Result.Success();
+    }
+
+    public async Task<Result> DeclineRequestAsync(Guid userId, Guid myId)
+    {
+        var request = await _context.FriendRequests.FirstOrDefaultAsync(fr => fr.ReceiverUserId == myId && fr.SenderUserId == userId);
+        if (request == null) return new NotFoundException(nameof(FriendRequest));
+
+        request.RequestStatus = RequestStatus.Declined;
+
+        await _context.SaveChangesAsync();
+        
+        return Result.Success();    
     }
 }

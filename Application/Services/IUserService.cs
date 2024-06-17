@@ -10,4 +10,7 @@ public interface IUserService
     Task<Result> CreateFriendRequest(Guid senderUserId, Guid receiverUserId);
     Task<Result<UserFullDto>> GetUserByIdAsync(Guid userId, Guid myId);
     Task<Result> DeleteUserRequest(Guid senderUserId, Guid receiverUserId);
+    
+    Task<Result> AcceptRequestAsync(Guid userId, Guid myId);
+    Task<Result> DeclineRequestAsync(Guid userId, Guid myId);
 }

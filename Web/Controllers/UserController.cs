@@ -45,4 +45,18 @@ public sealed class UserController: BaseController
         var result = await _userService.DeleteUserRequest(UserId, id);
         return result.ToIActionResult();
     }
+    
+    [HttpPost("{id:guid}/request/accept")]
+    public async Task<IActionResult> AcceptRequest(Guid id)
+    {
+        var result = await _userService.AcceptRequestAsync(id, UserId);
+        return result.ToIActionResult();
+    }
+
+    [HttpPost("{id:guid}/request/decline")]
+    public async Task<IActionResult> DeclineRequest(Guid id)
+    {
+        var result = await _userService.DeclineRequestAsync(id, UserId);
+        return result.ToIActionResult();    
+    }
 }
