@@ -11,7 +11,7 @@ public class UserFullDto: UserShortDto
     public DateTime? Birthday { get; init; }
     public Gender? Gender { get; init; }
     
-    public bool? HasMyFriendRequest { get; set; }
+    public ShortRequestDto? Request { get; set; }
     
     [Required]
     public required IEnumerable<InterestDto> Interests { get; init; }

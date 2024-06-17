@@ -54,6 +54,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapHub<LocationHub>("location");
+app.MapHub<LocationHub>("/location");
 
 app.Run();

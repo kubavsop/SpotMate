@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
@@ -55,14 +54,19 @@ public class UserService: IUserService
             .Where(u => searchParameters.Interests == null || u.Interests.Select(i => i.Id).Intersect(searchParameters.Interests).Any())
             .Where(u => !searchParameters.IsInterestMatch || myInterests.Count == 0 || u.Interests.Select(i => i.Id).Intersect(myInterests).Any())
             .Select(u => new NonFriendDto
-            {
-                HasMyFriendRequest = u.ReceivedRequests.Any(r => r.SenderUserId == userId) ? true : (u.SentRequests.Any(r => r.ReceiverUserId == userId) ? false : null),
-                Id = u.Id,
-                Avatar = u.AvatarFileName != null ? $"{BaseUrl}{u.AvatarFileName}" : null,
-                FullName = u.FullName,
-                UserName = u.UserName,
-                UserStatus = u.UserStatus
-            })
+                {
+                    Id = u.Id,
+                    Avatar = u.AvatarFileName != null ? $"{BaseUrl}{u.AvatarFileName}" : null,
+                    FullName = u.FullName,
+                    UserName = u.UserName,
+                    UserStatus = u.UserStatus,
+                    Request = u.ReceivedRequests.Any(r => r.SenderUserId == userId) || u.SentRequests.Any(r => r.ReceiverUserId == userId) ? new ShortRequestDto
+                    {
+                        HasMyFriendRequest = u.ReceivedRequests.Any(r => r.SenderUserId == userId),
+                        RequestStatus = u.ReceivedRequests.Any(r => r.SenderUserId == userId) ? u.ReceivedRequests.First(r => r.SenderUserId == userId).RequestStatus : u.SentRequests.First(r => r.ReceiverUserId == userId).RequestStatus
+                    } : null
+                }
+            )
             .Skip(searchParameters.Offset)
             .Take(searchParameters.Limit)
             .ToListAsync();
@@ -117,9 +121,15 @@ public class UserService: IUserService
         }
 
         var userFull = _mapper.Map<UserFullDto>(user);
-        userFull.HasMyFriendRequest = user.ReceivedRequests.Any(r => r.SenderUserId == myId)
-            ? true
-            : (user.SentRequests.Any(r => r.ReceiverUserId == myId) ? false : null);
+        userFull.Request = user.ReceivedRequests.Any(r => r.SenderUserId == myId) || user.SentRequests.Any(r => r.ReceiverUserId == myId)
+                ? new ShortRequestDto
+                {
+                    HasMyFriendRequest = user.ReceivedRequests.Any(r => r.SenderUserId == myId),
+                    RequestStatus = user.ReceivedRequests.Any(r => r.SenderUserId == myId)
+                        ? user.ReceivedRequests.First(r => r.SenderUserId == myId).RequestStatus
+                        : user.SentRequests.First(r => r.ReceiverUserId == myId).RequestStatus
+                }
+                : null;
         
         return userFull;
     }
