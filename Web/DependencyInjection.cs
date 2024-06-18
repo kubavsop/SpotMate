@@ -9,7 +9,13 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddPresentationLayer(this IServiceCollection services)
     {
-        services.AddSignalR();
+        services.AddSignalR()
+            .AddJsonProtocol(options =>
+            {
+                options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                options.PayloadSerializerOptions.Converters.Add(new CustomDateTimeConverter());
+            });;
+        
         services.AddControllers(options =>
             {
                 options.OutputFormatters.RemoveType<HttpNoContentOutputFormatter>();
