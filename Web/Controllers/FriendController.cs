@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SpotMate.Application.DTOs.HubModels;
 using SpotMate.Application.DTOs.Requests;
 using SpotMate.Application.DTOs.Responses;
 using SpotMate.Application.Services;
@@ -22,6 +23,13 @@ public sealed class FriendController: BaseController
     public async Task<ActionResult<IEnumerable<FriendShortDto>>> GetFriends([FromQuery] UserShortSearchParameters userSearchParameters)
     {
         var result = await _friendService.GetFriendsAsync(userSearchParameters, UserId);
+        return result.ToIActionResult();
+    }
+    
+    [HttpGet("location")]
+    public async Task<ActionResult<IEnumerable<UserLocationModel>>> GetFriendsLocation()
+    {
+        var result = await _friendService.GetFriendsLocation(UserId);
         return result.ToIActionResult();
     }
 

@@ -1,4 +1,5 @@
-﻿using SpotMate.Application.DTOs.Requests;
+﻿using SpotMate.Application.DTOs.HubModels;
+using SpotMate.Application.DTOs.Requests;
 using SpotMate.Application.DTOs.Responses;
 using SpotMate.Application.OperationResult;
 
@@ -13,4 +14,5 @@ public interface IFriendService
     Task<Result<FriendDto>> GetFriend(Guid friendId, Guid userId);
     Task<Result> FreezeLocationAsync(Guid friendId, Guid userId);
     Task<Result> UnFreezeLocationAsync(Guid friendId, Guid userId);
+    Task<Result<IEnumerable<UserLocationModel>>> GetFriendsLocation(Guid userId);
 }

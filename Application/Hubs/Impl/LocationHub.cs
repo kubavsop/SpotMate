@@ -41,23 +41,6 @@ public sealed class LocationHub: Hub<ILocationHub>
         user.LastOnline = null;
         await _context.SaveChangesAsync();
         
-        var friends = await _context.UserFriends
-            .AsNoTracking()
-            .Where(u => u.FriendId == userId)
-            .Select(u => new UserLocationModel
-            {
-                Id = u.UserId,
-                UserName = u.User.UserName,
-                Avatar = $"{_baseUrlOptions.Url}{u.Friend.AvatarFileName}",
-                FullName = u.User.FullName,
-                UserStatus = u.User.UserStatus,
-                LastOnline = u.User.LastOnline,
-                Coordinate = u.IsLocationFrozen ? new CoordinatesModel{Latitude = u.Latitude!.Value, Longitude = u.Longitude!.Value} : new CoordinatesModel{Latitude = u.User.Latitude, Longitude = u.User.Longitude},
-                ChatId = u.User.ChatUsers.FirstOrDefault(cu => cu.UserId == u.UserId && cu.FriendId == userId) != null ? u.User.ChatUsers.First(cu => cu.UserId == u.UserId && cu.FriendId == userId).ChatId : null
-            })
-            .ToListAsync();
-
-        await Clients.Client(Context.ConnectionId).ReceiveFriendsLocation(friends);
         await base.OnConnectedAsync();
     }
 

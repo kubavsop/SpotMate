@@ -2,29 +2,34 @@
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Options;
 using SpotMate.Application.Context;
+using SpotMate.Application.DTOs.HubModels;
 using SpotMate.Application.DTOs.Requests;
 using SpotMate.Application.DTOs.Responses;
 using SpotMate.Application.Exceptions;
 using SpotMate.Application.Hubs;
 using SpotMate.Application.Hubs.Impl;
 using SpotMate.Application.OperationResult;
+using SpotMate.Application.Options;
 
 namespace SpotMate.Application.Services.Impl;
 
 public sealed class FriendService: IFriendService
 {
+    private readonly BaseUrlOptions _baseUrlOptions;
     private readonly IDistributedCache _cache;
     private readonly IHubContext<LocationHub, ILocationHub> _hubContext; 
     private readonly IApplicationDbContext _context;
     private readonly IMapper _mapper;
 
-    public FriendService(IApplicationDbContext context, IMapper mapper, IDistributedCache cache, IHubContext<LocationHub, ILocationHub> hubContext)
+    public FriendService(IApplicationDbContext context, IMapper mapper, IDistributedCache cache, IHubContext<LocationHub, ILocationHub> hubContext, IOptions<BaseUrlOptions> baseUrlOptions)
     {
         _context = context;
         _mapper = mapper;
         _cache = cache;
         _hubContext = hubContext;
+        _baseUrlOptions = baseUrlOptions.Value;
     }
 
     public async Task<Result<IEnumerable<FriendShortDto>>> GetFriendsAsync(UserShortSearchParameters userShortSearchParameters, Guid userId)
@@ -152,5 +157,25 @@ public sealed class FriendService: IFriendService
 
         return Result.Success();    
     }
-    
+
+    public async Task<Result<IEnumerable<UserLocationModel>>> GetFriendsLocation(Guid userId)
+    {
+        var friends = await _context.UserFriends
+            .AsNoTracking()
+            .Where(u => u.FriendId == userId)
+            .Select(u => new UserLocationModel
+            {
+                Id = u.UserId,
+                UserName = u.User.UserName,
+                Avatar = $"{_baseUrlOptions.Url}{u.Friend.AvatarFileName}",
+                FullName = u.User.FullName,
+                UserStatus = u.User.UserStatus,
+                LastOnline = u.User.LastOnline,
+                Coordinate = u.IsLocationFrozen ? new CoordinatesModel{Latitude = u.Latitude!.Value, Longitude = u.Longitude!.Value} : new CoordinatesModel{Latitude = u.User.Latitude, Longitude = u.User.Longitude},
+                ChatId = u.User.ChatUsers.FirstOrDefault(cu => cu.UserId == u.UserId && cu.FriendId == userId) != null ? u.User.ChatUsers.First(cu => cu.UserId == u.UserId && cu.FriendId == userId).ChatId : null
+            })
+            .ToListAsync();
+
+        return friends;
+    }
 }
