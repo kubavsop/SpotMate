@@ -13,5 +13,8 @@ public sealed class MessageDto
     [Required]
     public required UserShortDto User { get; init; }
     [Required]
-    public required bool IsMine { get; init; }
+    public bool IsMine { get; set; }
+    
+    [Required]
+    public required bool IsUnread { get; init; }
 }

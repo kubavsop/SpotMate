@@ -30,7 +30,7 @@ public sealed class ChatService: IChatService
             .Select(cu => new ChatDto
             {
                 Id = cu.ChatId,
-                UnreadMessagesCount = cu.Chat.Messages.Count(m => m.IsUnread),
+                UnreadMessagesCount = cu.Chat.Messages.Count(m => m.IsUnread && m.UserId != userId),
                 IsBlocked = cu.User.Friends.All(f => f.FriendId != cu.FriendId),
                 LastMessage = cu.Chat.Messages.OrderByDescending(m => m.CreateTime).Select(m => new MessageDto
                 {
@@ -45,7 +45,9 @@ public sealed class ChatService: IChatService
                         FullName = m.User.FullName,
                         UserName = m.User.UserName,
                         UserStatus = m.User.UserStatus,
-                    }
+                        LastOnline = m.User.LastOnline
+                    },
+                    IsUnread = m.IsUnread
                 }).FirstOrDefault()
             }).ToListAsync();
 
@@ -114,6 +116,11 @@ public sealed class ChatService: IChatService
 
         foreach (var m in messages)
         {
+            if (m.IsUnread && m.UserId != userId)
+            {
+                m.IsUnread = false;
+            }
+            
             linkedList.AddFirst(new MessageDto
             {
                 Id = m.Id,
@@ -127,13 +134,10 @@ public sealed class ChatService: IChatService
                     FullName = m.User.FullName,
                     UserName = m.User.UserName,
                     UserStatus = m.User.UserStatus,
-                }
+                    LastOnline = m.User.LastOnline
+                },
+                IsUnread = m.IsUnread
             });
-
-            if (m.IsUnread)
-            {
-                m.IsUnread = false;
-            }
         }
 
         await _context.SaveChangesAsync();
