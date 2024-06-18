@@ -56,5 +56,10 @@ public class UserShortDto: IMapFrom<SpotMateUser>
                     Longitude = src.Longitude,
                     Latitude = src.Latitude
                 }));
+        
+        profile.CreateMap<SpotMateUser, FriendShortDto>()
+            .ForMember(dest => dest.Avatar,
+                opt => 
+                    opt.MapFrom(src => src.AvatarFileName != null ? $"{BaseUrl}{src.AvatarFileName}" : null));
     }
 }

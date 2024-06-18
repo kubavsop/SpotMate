@@ -27,7 +27,7 @@ public sealed class FriendService: IFriendService
         _hubContext = hubContext;
     }
 
-    public async Task<Result<IEnumerable<UserShortDto>>> GetFriendsAsync(UserShortSearchParameters userShortSearchParameters, Guid userId)
+    public async Task<Result<IEnumerable<FriendShortDto>>> GetFriendsAsync(UserShortSearchParameters userShortSearchParameters, Guid userId)
     {
         var normalizedUserName = userShortSearchParameters.UserName?.ToUpper();
 
@@ -40,7 +40,16 @@ public sealed class FriendService: IFriendService
             .Select(f => f.Friend)
             .ToListAsync();
 
-        return _mapper.Map<List<UserShortDto>>(friends);
+        var friendsDto = _mapper.Map<List<FriendShortDto>>(friends);
+
+        foreach (var friendShortDto in friendsDto)
+        {
+            friendShortDto.ChatId =
+                (await _context.ChatUsers.FirstOrDefaultAsync(cu => cu.UserId == userId && cu.FriendId == friendShortDto.Id))
+                ?.ChatId;
+        }
+
+        return friendsDto;
     }
 
     public async Task<Result> DeleteFriendAsync(Guid friendId, Guid userId)
@@ -91,6 +100,9 @@ public sealed class FriendService: IFriendService
 
         var friend = _mapper.Map<FriendDto>(userFriend.Friend);
         friend.IsLocationFrozen = userFriend.IsLocationFrozen;
+        friend.ChatId =
+            (await _context.ChatUsers.FirstOrDefaultAsync(cu => cu.UserId == userId && cu.FriendId == friendId))
+            ?.ChatId;
         return friend;
     }
 

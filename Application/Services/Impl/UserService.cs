@@ -179,13 +179,17 @@ public class UserService: IUserService
         if (receiverConnectionId != null)
         {
             var senderUser = (await _context.Users.FirstOrDefaultAsync(u => u.Id == senderId))!;
-            await _hubContext.Clients.Client(receiverConnectionId).ReceiveAddedFriend(_mapper.Map<UserLocationModel>(senderUser));
+            var senderUserDto = _mapper.Map<UserLocationModel>(senderUser);
+            senderUserDto.ChatId = (await _context.ChatUsers.FirstOrDefaultAsync(cu => cu.UserId == senderId && cu.FriendId == receiverId))?.ChatId;
+            await _hubContext.Clients.Client(receiverConnectionId).ReceiveAddedFriend(senderUserDto);
         }
 
         if (senderConnectionId != null)
         {
             var receiverUser = (await _context.Users.FirstOrDefaultAsync(u => u.Id == receiverId))!;
-            await _hubContext.Clients.Client(senderConnectionId).ReceiveAddedFriend(_mapper.Map<UserLocationModel>(receiverUser));
+            var receiverUserDto = _mapper.Map<UserLocationModel>(receiverUser);
+            receiverUserDto.ChatId = (await _context.ChatUsers.FirstOrDefaultAsync(cu => cu.UserId == receiverId && cu.FriendId == senderId))?.ChatId;
+            await _hubContext.Clients.Client(senderConnectionId).ReceiveAddedFriend(receiverUserDto);
         }
 
         return Result.Success();

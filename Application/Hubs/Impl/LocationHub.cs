@@ -52,11 +52,12 @@ public sealed class LocationHub: Hub<ILocationHub>
                 FullName = u.User.FullName,
                 UserStatus = u.User.UserStatus,
                 LastOnline = u.User.LastOnline,
-                Coordinate = u.IsLocationFrozen ? new CoordinatesModel{Latitude = u.Latitude!.Value, Longitude = u.Longitude!.Value} : new CoordinatesModel{Latitude = u.User.Latitude, Longitude = u.User.Longitude}
+                Coordinate = u.IsLocationFrozen ? new CoordinatesModel{Latitude = u.Latitude!.Value, Longitude = u.Longitude!.Value} : new CoordinatesModel{Latitude = u.User.Latitude, Longitude = u.User.Longitude},
+                ChatId = u.User.ChatUsers.FirstOrDefault(cu => cu.UserId == u.UserId && cu.FriendId == userId) != null ? u.User.ChatUsers.First(cu => cu.UserId == u.UserId && cu.FriendId == userId).ChatId : null
             })
             .ToListAsync();
 
-        await Clients.Client(Context.ConnectionId).ReceiveFriendsLocation( _mapper.Map<List<UserLocationModel>>(friends));
+        await Clients.Client(Context.ConnectionId).ReceiveFriendsLocation(friends);
         await base.OnConnectedAsync();
     }
 
@@ -84,6 +85,7 @@ public sealed class LocationHub: Hub<ILocationHub>
         {
             var friendConnectionId = await _cache.GetStringAsync(id.ToString());
             if (friendConnectionId == null) continue;
+            userLocationModel.ChatId = (await _context.ChatUsers.FirstOrDefaultAsync(cu => cu.UserId == userId && cu.FriendId == id))?.ChatId;
             await Clients.Client(friendConnectionId).ReceiveFriendLocationChanged(userLocationModel);
         }
     }
