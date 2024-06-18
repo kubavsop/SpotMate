@@ -1,6 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using SpotMate.Application.Mapping;
-using SpotMate.Domain.Entities;
 
 namespace SpotMate.Application.DTOs.Responses;
 

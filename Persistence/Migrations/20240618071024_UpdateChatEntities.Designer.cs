@@ -2,18 +2,21 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SpotMate.Persistence;
 
 #nullable disable
 
-namespace SpotMate.Migrations
+namespace SpotMate.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240618071024_UpdateChatEntities")]
+    partial class UpdateChatEntities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -187,6 +190,9 @@ namespace SpotMate.Migrations
                     b.Property<DateTime?>("ModifiedTime")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("UnreadMessagesCount")
+                        .HasColumnType("integer");
+
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
@@ -290,9 +296,6 @@ namespace SpotMate.Migrations
 
                     b.Property<DateTime>("CreateTime")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsUnread")
-                        .HasColumnType("boolean");
 
                     b.Property<DateTime?>("ModifiedTime")
                         .HasColumnType("timestamp with time zone");

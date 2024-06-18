@@ -8,6 +8,5 @@ public sealed class ChatDto
     public required Guid Id { get; init; }
     [Required]
     public required int UnreadMessagesCount { get; init; }
-    [Required]
-    public required MessageDto LastMessage { get; init; }
+    public MessageDto? LastMessage { get; init; }
 }

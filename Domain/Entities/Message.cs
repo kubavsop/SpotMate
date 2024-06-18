@@ -9,4 +9,6 @@ public sealed class Message: BaseEntity
     public Chat Chat { get; set; } = null!;
     public Guid UserId { get; set; }
     public SpotMateUser User { get; set; } = null!;
+    
+    public bool IsUnread { get; set; } = true;
 }

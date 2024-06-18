@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SpotMate.Application.DTOs.Base;
 
-public abstract class BaseSearchParameters
+public class BaseSearchParameters
 {
     [DefaultValue(DefaultLimit)]
     [Range(1, int.MaxValue)]

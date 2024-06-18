@@ -10,5 +10,4 @@ public sealed class ChatUser: BaseEntity
     public Guid FriendId { get; set; }
     public Chat Chat = null!;
     public Guid ChatId { get; set; }
-    public int UnreadMessagesCount { get; set; } = 0;
 }

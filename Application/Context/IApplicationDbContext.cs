@@ -6,6 +6,9 @@ namespace SpotMate.Application.Context;
 
 public interface IApplicationDbContext
 {
+    DbSet<Chat> Chats { get; }
+    DbSet<ChatUser> ChatUsers { get; }
+    DbSet<Message> Messages { get; }
     DbSet<DailyStep> DailySteps { get; }
     DbSet<FriendRequest> FriendRequests { get; }
     DbSet<UserFriend> UserFriends { get; }

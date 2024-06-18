@@ -9,6 +9,9 @@ namespace SpotMate.Persistence;
 
 public sealed class ApplicationDbContext: IdentityDbContext<SpotMateUser, IdentityRole<Guid>, Guid>, IApplicationDbContext
 {
+    public DbSet<Chat> Chats { get; init; }
+    public DbSet<ChatUser> ChatUsers { get; init; }
+    public DbSet<Message> Messages { get; init; }
     public DbSet<DailyStep> DailySteps { get; init; }
     public DbSet<FriendRequest> FriendRequests { get; init; }
     public DbSet<UserFriend> UserFriends { get; init; }
