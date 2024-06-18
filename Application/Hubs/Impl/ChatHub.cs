@@ -95,6 +95,20 @@ public sealed class ChatHub: Hub<IChatHub>
       await _context.SaveChangesAsync();
    }
 
+   public async Task StartTyping(Guid chatId)
+   {
+      var userId = UserId;
+      var chatUser = await _context.ChatUsers.FirstOrDefaultAsync(cu => cu.ChatId == chatId);
+      if (chatUser == null) return;
+
+      var friendId = chatUser.UserId == userId ? chatUser.FriendId : chatUser.UserId;
+      var friendConnectionId = await _cache.GetStringAsync(friendId + StringToAdd);
+      if (friendConnectionId != null)
+      {
+         await Clients.Client(friendConnectionId).ReceiveTyping(chatId);
+      }
+   }
+
    public override async Task OnDisconnectedAsync(Exception? exception)
    {
       await _cache.RemoveAsync(UserId + StringToAdd);
