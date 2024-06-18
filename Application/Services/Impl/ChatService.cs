@@ -31,6 +31,7 @@ public sealed class ChatService: IChatService
             {
                 Id = cu.ChatId,
                 UnreadMessagesCount = cu.Chat.Messages.Count(m => m.IsUnread),
+                IsBlocked = cu.User.Friends.All(f => f.FriendId != cu.FriendId),
                 LastMessage = cu.Chat.Messages.OrderByDescending(m => m.CreateTime).Select(m => new MessageDto
                 {
                     Id = m.Id,
