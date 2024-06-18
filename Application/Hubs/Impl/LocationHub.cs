@@ -4,24 +4,27 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Options;
 using SpotMate.Application.Context;
 using SpotMate.Application.DTOs.HubModels;
+using SpotMate.Application.Options;
 
 namespace SpotMate.Application.Hubs.Impl;
 
 [Authorize]
 public sealed class LocationHub: Hub<ILocationHub>
 {
-    private const string BaseUrl = "http://89.111.175.47:8080/static/";
+    private readonly BaseUrlOptions _baseUrlOptions;
     private readonly IApplicationDbContext _context;
     private readonly IMapper _mapper;
     private readonly IDistributedCache _cache;
 
-    public LocationHub(IDistributedCache cache, IApplicationDbContext context, IMapper mapper)
+    public LocationHub(IDistributedCache cache, IApplicationDbContext context, IMapper mapper, IOptions<BaseUrlOptions> baseUrlOptions)
     {
         _cache = cache;
         _context = context;
         _mapper = mapper;
+        _baseUrlOptions = baseUrlOptions.Value;
     }
     
     public override async Task OnConnectedAsync()
@@ -45,7 +48,7 @@ public sealed class LocationHub: Hub<ILocationHub>
             {
                 Id = u.UserId,
                 UserName = u.User.UserName,
-                Avatar = $"{BaseUrl}{u.Friend.AvatarFileName}",
+                Avatar = $"{_baseUrlOptions.Url}{u.Friend.AvatarFileName}",
                 FullName = u.User.FullName,
                 UserStatus = u.User.UserStatus,
                 LastOnline = u.User.LastOnline,

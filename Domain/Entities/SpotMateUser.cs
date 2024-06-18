@@ -24,12 +24,12 @@ public sealed class SpotMateUser: IdentityUser<Guid>, IBaseEntity
     public DateTime? LastOnline { get; set; }
     public UserStatus? UserStatus { get; set; }
 
+    public ICollection<ChatUser> ChatUsers { get; } = [];
     public ICollection<DailyStep> DailySteps { get; } = [];
     public ICollection<UserFriend> Friends { get; } = [];
     
     public ICollection<RefreshToken> RefreshTokens { get; } = [];
     public ICollection<Interest> Interests { get; } = [];
     public ICollection<FriendRequest> ReceivedRequests { get; } = [];
-    
     public ICollection<FriendRequest> SentRequests { get; } = [];
 }

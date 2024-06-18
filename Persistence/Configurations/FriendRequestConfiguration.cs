@@ -8,8 +8,6 @@ public sealed class FriendRequestConfiguration: IEntityTypeConfiguration<FriendR
 {
     public void Configure(EntityTypeBuilder<FriendRequest> builder)
     {
-
-        
         builder
             .HasOne(r => r.ReceiverUser)
             .WithMany(u => u.ReceivedRequests)

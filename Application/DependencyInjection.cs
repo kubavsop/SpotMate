@@ -18,6 +18,7 @@ public static class DependencyInjection
         services.AddScoped<IUserService, UserService>();
         services.AddAutoMapper(typeof(ConventionalMappingProfile).Assembly);
         services.Configure<RefreshTokenOptions>(configuration.GetSection("RefreshToken"));
+        services.Configure<BaseUrlOptions>(configuration.GetSection("BaseUrl"));
         services.AddStackExchangeRedisCache(options =>
         {
             var connection = configuration.GetConnectionString("Redis");

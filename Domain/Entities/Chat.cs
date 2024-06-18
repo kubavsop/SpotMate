@@ -4,6 +4,6 @@ namespace SpotMate.Domain.Entities;
 
 public sealed class Chat: BaseEntity
 {
-    public ICollection<SpotMateUser> Users { get; } = [];
     public ICollection<Message> Messages { get; } = [];
+    public ICollection<ChatUser> ChatUsers { get; } = [];
 }

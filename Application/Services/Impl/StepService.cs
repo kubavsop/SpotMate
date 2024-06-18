@@ -1,9 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using SpotMate.Application.Context;
 using SpotMate.Application.DTOs.Requests;
 using SpotMate.Application.DTOs.Responses;
 using SpotMate.Application.Exceptions;
 using SpotMate.Application.OperationResult;
+using SpotMate.Application.Options;
 using SpotMate.Domain.Entities;
 
 namespace SpotMate.Application.Services.Impl;
@@ -11,11 +13,12 @@ namespace SpotMate.Application.Services.Impl;
 public class StepService : IStepService
 {
     private readonly IApplicationDbContext _context;
-    private const string BaseUrl = "http://89.111.175.47:8080/static/";
+    private readonly BaseUrlOptions _baseUrlOptions;
 
-    public StepService(IApplicationDbContext context)
+    public StepService(IApplicationDbContext context, IOptions<BaseUrlOptions> baseUrlOptions)
     {
         _context = context;
+        _baseUrlOptions = baseUrlOptions.Value;
     }
 
     public async Task<Result> CreateDailyStepAsync(CreateDailyStepDto dto, Guid userId)
@@ -81,7 +84,7 @@ public class StepService : IStepService
         {
             Id = f.FriendId,
             UserName = f.Friend.UserName,
-            Avatar = f.Friend.AvatarFileName != null ? $"{BaseUrl}{f.Friend.AvatarFileName}" : null,
+            Avatar = f.Friend.AvatarFileName != null ? $"{_baseUrlOptions.Url}{f.Friend.AvatarFileName}" : null,
             FullName = f.Friend.FullName,
             UserStatus = f.Friend.UserStatus,
             LastOnline = f.Friend.LastOnline,
@@ -92,7 +95,7 @@ public class StepService : IStepService
         {
             Id = user.Id,
             UserName = user.UserName,
-            Avatar = user.AvatarFileName != null ? $"{BaseUrl}{user.AvatarFileName}" : null,
+            Avatar = user.AvatarFileName != null ? $"{_baseUrlOptions.Url}{user.AvatarFileName}" : null,
             FullName = user.FullName,
             UserStatus = user.UserStatus,
             LastOnline = user.LastOnline,

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Options;
 using SpotMate.Application.Context;
 using SpotMate.Application.DTOs.HubModels;
 using SpotMate.Application.DTOs.Requests;
@@ -10,6 +11,7 @@ using SpotMate.Application.Exceptions;
 using SpotMate.Application.Hubs;
 using SpotMate.Application.Hubs.Impl;
 using SpotMate.Application.OperationResult;
+using SpotMate.Application.Options;
 using SpotMate.Domain.Entities;
 using SpotMate.Domain.Enums;
 
@@ -21,14 +23,15 @@ public class UserService: IUserService
     private readonly IHubContext<LocationHub, ILocationHub> _hubContext; 
     private readonly IApplicationDbContext _context;
     private readonly IMapper _mapper;
-    private const string BaseUrl = "http://89.111.175.47:8080/static/";
+    private readonly BaseUrlOptions _baseUrlOptions;
 
-    public UserService(IApplicationDbContext context, IMapper mapper, IDistributedCache cache, IHubContext<LocationHub, ILocationHub> hubContext)
+    public UserService(IApplicationDbContext context, IMapper mapper, IDistributedCache cache, IHubContext<LocationHub, ILocationHub> hubContext, IOptions<BaseUrlOptions> baseUrlOptions)
     {
         _context = context;
         _mapper = mapper;
         _cache = cache;
         _hubContext = hubContext;
+        _baseUrlOptions = baseUrlOptions.Value;
     }
 
     public async Task<Result<IEnumerable<NonFriendDto>>> GetNonFriendsUsersAsync(UserSearchParameters searchParameters, Guid userId)
@@ -56,7 +59,7 @@ public class UserService: IUserService
             .Select(u => new NonFriendDto
                 {
                     Id = u.Id,
-                    Avatar = u.AvatarFileName != null ? $"{BaseUrl}{u.AvatarFileName}" : null,
+                    Avatar = u.AvatarFileName != null ? $"{_baseUrlOptions.Url}{u.AvatarFileName}" : null,
                     FullName = u.FullName,
                     UserName = u.UserName,
                     UserStatus = u.UserStatus,
