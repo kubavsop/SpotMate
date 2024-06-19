@@ -17,15 +17,16 @@ public class EditUserDto
     public required IEnumerable<Guid> Interests { get; init; } 
     
     [Birthday]
-    public DateTime? Birthday     
+    [Required]
+    public required DateTime Birthday     
     {
         get => _birthday;
-        set => _birthday = value.HasValue ? DateTime.SpecifyKind(value.Value, DateTimeKind.Utc) : value;
+        set => _birthday = DateTime.SpecifyKind(value, DateTimeKind.Utc);
     }
-    
-    public Gender? Gender { get; init; }
+    [Required]
+    public required Gender Gender { get; init; }
     
     public UserStatus? UserStatus { get; init; }
     
-    private DateTime? _birthday;
+    private DateTime _birthday;
 }

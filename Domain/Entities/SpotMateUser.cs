@@ -12,9 +12,8 @@ public sealed class SpotMateUser: IdentityUser<Guid>, IBaseEntity
     public override required string UserName { get; set; }
     public string? AvatarFileName { get; set; }
     public string FullName { get; set; } = "";
-    public DateTime? Birthday { get; set; }
-    public Gender? Gender { get; set; }
-
+    public DateTime Birthday { get; set; } = DateTime.SpecifyKind(new DateTime(2000, 1, 1), DateTimeKind.Utc);
+    public Gender Gender { get; set; } = Gender.Male;
     public bool IsInvisible { get; set; } = false;
 
     public double Latitude { get; set; }

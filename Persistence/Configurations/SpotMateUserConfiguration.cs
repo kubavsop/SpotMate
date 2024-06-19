@@ -12,6 +12,5 @@ internal sealed class SpotMateUserConfiguration: IEntityTypeConfiguration<SpotMa
             .HasMany(u => u.Interests)
             .WithMany(i => i.Users)
             .UsingEntity<UserInterest>();
- 
     }
 }
