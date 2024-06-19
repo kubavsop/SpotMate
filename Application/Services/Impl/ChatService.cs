@@ -22,14 +22,21 @@ public sealed class ChatService: IChatService
         _baseUrlOptions = baseUrlOptions.Value;
     }
 
-    public async Task<Result<IEnumerable<ChatDto>>> GetChatsAsync(Guid userId)
+    public async Task<Result<IEnumerable<ChatFullDto>>> GetChatsAsync(Guid userId)
     {
         var chats = await _context.ChatUsers
             .AsNoTracking()
             .Where(cu => cu.UserId == userId)
-            .Select(cu => new ChatDto
+            .Select(cu => new ChatFullDto
             {
-                Id = cu.ChatId,
+                Chat = new ChatShortDto
+                {
+                    Id = cu.ChatId,
+                    Avatar = cu.Friend.AvatarFileName != null ? $"{_baseUrlOptions.Url}{cu.Friend.AvatarFileName}" : null,
+                    LastOnline = cu.Friend.LastOnline,
+                    Title = cu.Friend.FullName,
+                    UserStatus = cu.Friend.UserStatus
+                },
                 UnreadMessagesCount = cu.Chat.Messages.Count(m => m.IsUnread && m.UserId != userId),
                 IsBlocked = cu.User.Friends.All(f => f.FriendId != cu.FriendId),
                 LastMessage = cu.Chat.Messages.OrderByDescending(m => m.CreateTime).Select(m => new MessageDto
@@ -38,14 +45,11 @@ public sealed class ChatService: IChatService
                     CreateTime = m.CreateTime,
                     IsMine = m.UserId == userId,
                     Text = m.Text,
-                    User = new UserShortDto
+                    User = new UserMessageModel
                     {
                         Id = m.User.Id,
                         Avatar = m.User.AvatarFileName != null ? $"{_baseUrlOptions.Url}{m.User.AvatarFileName}" : null,
-                        FullName = m.User.FullName,
-                        UserName = m.User.UserName,
-                        UserStatus = m.User.UserStatus,
-                        LastOnline = m.User.LastOnline
+                        UserName = m.User.UserName
                     },
                     IsUnread = m.IsUnread
                 }).FirstOrDefault()
@@ -54,7 +58,7 @@ public sealed class ChatService: IChatService
         return chats;
     }
 
-    public async Task<Result> CreateChat(CreateChatDto createChatDto, Guid userId)
+    public async Task<Result<ChatShortDto>> CreateChat(CreateChatDto createChatDto, Guid userId)
     {
         if (!await _context.Users.AnyAsync(u => u.Id == createChatDto.UserId) ||
             !await _context.Users.AnyAsync(u => u.Id == userId))
@@ -94,7 +98,15 @@ public sealed class ChatService: IChatService
 
         await _context.SaveChangesAsync();
 
-        return Result.Success();
+        var friend = await _context.Users.FirstAsync(u => u.Id == createChatDto.UserId);
+        return new ChatShortDto
+        {
+            Id = chatId,
+            Avatar = friend.AvatarFileName != null ? $"{_baseUrlOptions.Url}{friend.AvatarFileName}" : null,
+            LastOnline = friend.LastOnline,
+            Title = friend.FullName,
+            UserStatus = friend.UserStatus
+        };
     }
 
     public async Task<Result<IEnumerable<MessageDto>>> GetMessages(Guid chatId, BaseSearchParameters searchParameters, Guid userId)
@@ -127,14 +139,11 @@ public sealed class ChatService: IChatService
                 CreateTime = m.CreateTime,
                 IsMine = m.UserId == userId,
                 Text = m.Text,
-                User = new UserShortDto
+                User = new UserMessageModel
                 {
                     Id = m.User.Id,
                     Avatar = m.User.AvatarFileName != null ? $"{_baseUrlOptions.Url}{m.User.AvatarFileName}" : null,
-                    FullName = m.User.FullName,
                     UserName = m.User.UserName,
-                    UserStatus = m.User.UserStatus,
-                    LastOnline = m.User.LastOnline
                 },
                 IsUnread = m.IsUnread
             });

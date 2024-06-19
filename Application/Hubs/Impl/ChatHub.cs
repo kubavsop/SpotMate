@@ -60,14 +60,11 @@ public sealed class ChatHub: Hub<IChatHub>
          Text = message.Text,
          IsUnread = message.IsUnread,
          IsMine = true,
-         User = new UserShortDto
+         User = new UserMessageModel()
          {
             Id = user.Id,
             Avatar = user.AvatarFileName != null ? $"{_baseUrlOptions.Url}{user.AvatarFileName}" : null,
-            FullName = user.FullName,
             UserName = user.UserName,
-            UserStatus = user.UserStatus,
-            LastOnline = user.LastOnline
          }
       };
 

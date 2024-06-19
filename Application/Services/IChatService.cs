@@ -7,7 +7,7 @@ namespace SpotMate.Application.Services;
 
 public interface IChatService
 {
-    Task<Result<IEnumerable<ChatDto>>> GetChatsAsync(Guid userId);
-    Task<Result> CreateChat(CreateChatDto createChatDto, Guid userId);
+    Task<Result<IEnumerable<ChatFullDto>>> GetChatsAsync(Guid userId);
+    Task<Result<ChatShortDto>> CreateChat(CreateChatDto createChatDto, Guid userId);
     Task<Result<IEnumerable<MessageDto>>> GetMessages(Guid chatId, BaseSearchParameters searchParameters, Guid userId);
 }

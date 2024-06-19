@@ -11,7 +11,7 @@ public sealed class MessageDto
     [Required]
     public required string Text { get; init; }
     [Required]
-    public required UserShortDto User { get; init; }
+    public required UserMessageModel User { get; init; }
     [Required]
     public bool IsMine { get; set; }
     

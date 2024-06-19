@@ -2,10 +2,10 @@
 
 namespace SpotMate.Application.DTOs.Responses;
 
-public sealed class ChatDto
+public sealed class ChatFullDto
 {
     [Required]
-    public required Guid Id { get; init; }
+    public required ChatShortDto Chat { get; init; }
     [Required]
     public required int UnreadMessagesCount { get; init; }
     

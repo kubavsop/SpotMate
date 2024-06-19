@@ -20,14 +20,14 @@ public sealed class ChatController: BaseController
     }
 
     [HttpGet("my")]
-    public async Task<ActionResult<IEnumerable<ChatDto>>> GetMyChats()
+    public async Task<ActionResult<IEnumerable<ChatFullDto>>> GetMyChats()
     {
         var result = await _chatService.GetChatsAsync(UserId);
         return result.ToIActionResult();
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateChat(CreateChatDto createChatDto)
+    public async Task<ActionResult<ChatShortDto>> CreateChat(CreateChatDto createChatDto)
     {
         var result = await _chatService.CreateChat(createChatDto, UserId);
         return result.ToIActionResult();
