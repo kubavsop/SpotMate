@@ -56,6 +56,7 @@ public sealed class ChatHub: Hub<IChatHub>
       var messageDto = new MessageDto
       {
          Id = message.Id,
+         ChatId = messageModel.ChatId,
          CreateTime = message.CreateTime,
          Text = message.Text,
          IsUnread = message.IsUnread,

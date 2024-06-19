@@ -51,6 +51,7 @@ public sealed class ChatService: IChatService
                         Avatar = m.User.AvatarFileName != null ? $"{_baseUrlOptions.Url}{m.User.AvatarFileName}" : null,
                         UserName = m.User.UserName
                     },
+                    ChatId = cu.ChatId,
                     IsUnread = m.IsUnread
                 }).FirstOrDefault()
             }).ToListAsync();
@@ -145,7 +146,8 @@ public sealed class ChatService: IChatService
                     Avatar = m.User.AvatarFileName != null ? $"{_baseUrlOptions.Url}{m.User.AvatarFileName}" : null,
                     UserName = m.User.UserName,
                 },
-                IsUnread = m.IsUnread
+                IsUnread = m.IsUnread,
+                ChatId = chatId
             });
         }
 
