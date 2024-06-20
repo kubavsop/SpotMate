@@ -176,7 +176,7 @@ public class ProfileService: IProfileService
         var users = await _context.Users
             .AsNoTracking()
             .Where(u =>
-            u.Id != userId && !friends.Contains(u.Id) && u.Interests.Select(i => i.Id).Intersect(interestsId).Any())
+            u.Id != userId && u.IsInterestBasedLocationSharable && !friends.Contains(u.Id) && u.Interests.Select(i => i.Id).Intersect(interestsId).Any())
             .Select(u => new UserShortLocationModel
             {
                 Id = u.Id,
