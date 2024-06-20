@@ -290,9 +290,10 @@ public class ProfileService: IProfileService
     private async Task NotifyUserThatYouHaveInterests(IEnumerable<Guid> interestsToExcept, IEnumerable<Guid> interestsToNotify, SpotMateUser spotMateUser, IEnumerable<Guid> friends)
     {
         
-        var users = _context.Users
+        var users = await _context.Users
             .AsNoTracking()
-            .Where(u => u.Id != spotMateUser.Id && !friends.Contains(u.Id) && u.IsInterestBasedLocationSharable && u.Interests.Select(i => i.Id).Intersect(interestsToNotify).Any() && !u.Interests.Select(i => i.Id).Intersect(interestsToExcept).Any());
+            .Where(u => u.Id != spotMateUser.Id && !friends.Contains(u.Id) && u.IsInterestBasedLocationSharable && u.Interests.Select(i => i.Id).Intersect(interestsToNotify).Any() && !u.Interests.Select(i => i.Id).Intersect(interestsToExcept).Any())
+            .ToListAsync();
 
         var defaultCoordinate = new CoordinatesModel
             { Latitude = spotMateUser.Latitude, Longitude = spotMateUser.Longitude };
