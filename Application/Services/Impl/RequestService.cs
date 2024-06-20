@@ -81,6 +81,16 @@ public sealed class RequestService: IRequestService
                     UserStatus = cu.Friend.UserStatus
                 }).FirstOrDefaultAsync();
             
+            var frozenLocation =
+                await _context.FreezeLocations.FirstOrDefaultAsync(fl =>
+                    fl.UserId == senderId && fl.FreezerUserId == receiverId);
+
+            if (frozenLocation != null && frozenLocation.IsLocationFrozen)
+            {
+                senderUserDto.Coordinate = new CoordinatesModel
+                    { Latitude = frozenLocation.Latitude!.Value, Longitude = frozenLocation.Longitude!.Value };
+            }
+            
             await _hubContext.Clients.Client(receiverConnectionId).ReceiveAddedFriend(senderUserDto);
         }
 
@@ -98,6 +108,17 @@ public sealed class RequestService: IRequestService
                     Title = cu.Friend.FullName,
                     UserStatus = cu.Friend.UserStatus
                 }).FirstOrDefaultAsync();
+            
+            var frozenLocation =
+                await _context.FreezeLocations.FirstOrDefaultAsync(fl =>
+                    fl.UserId == receiverId && fl.FreezerUserId == senderId);
+
+            if (frozenLocation != null && frozenLocation.IsLocationFrozen)
+            {
+                receiverUserDto.Coordinate = new CoordinatesModel
+                    { Latitude = frozenLocation.Latitude!.Value, Longitude = frozenLocation.Longitude!.Value };
+            }
+            
             await _hubContext.Clients.Client(senderConnectionId).ReceiveAddedFriend(receiverUserDto);
         }
 
