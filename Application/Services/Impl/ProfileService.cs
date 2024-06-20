@@ -60,7 +60,7 @@ public class ProfileService: IProfileService
         var user = await _context.Users
             .Include(u => u.Interests)
             .FirstOrDefaultAsync(u => u.Id == userId);
-
+        
         if (user == null)
         {
             return new NotFoundException(nameof(SpotMateUser), userId);
@@ -150,9 +150,11 @@ public class ProfileService: IProfileService
         return Result.Success();
     }
 
-    public async Task<Result> ShareInterestBasedLocation(Guid userId)
+    public async Task<Result<IEnumerable<UserShortLocationModel>>> ShareInterestBasedLocation(Guid userId)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        var user = await _context.Users
+            .Include(u => u.Interests)
+            .FirstOrDefaultAsync(u => u.Id == userId);
         if (user == null) return new NotFoundException(nameof(SpotMateUser), userId);
 
         if (user.IsInterestBasedLocationSharable)
@@ -160,12 +162,73 @@ public class ProfileService: IProfileService
 
         user.IsInterestBasedLocationSharable = true;
         await _context.SaveChangesAsync();
-        throw new NotImplementedException();
+
+        var friends = await _context.UserFriends
+            .AsNoTracking()
+            .Where(uf => uf.UserId == userId)
+            .Select(uf => uf.FriendId)
+            .ToListAsync();
+        
+        var interestsId = user.Interests.Select(i => i.Id).ToList();
+        await NotifyUserThatYouHaveInterests([], interestsId, user, friends);
+        
+        
+        var users = await _context.Users
+            .AsNoTracking()
+            .Where(u =>
+            u.Id != userId && !friends.Contains(u.Id) && u.Interests.Select(i => i.Id).Intersect(interestsId).Any())
+            .Select(u => new UserShortLocationModel
+            {
+                Id = u.Id,
+                UserName = u.UserName,
+                Avatar = u.AvatarFileName != null ? $"{_baseUrlOptions.Url}{u.AvatarFileName}" : null,
+                FullName = u.FullName,
+                UserStatus = u.UserStatus,
+                LastOnline = u.LastOnline,
+                Coordinate = new CoordinatesModel{Latitude = u.Latitude, Longitude = u.Longitude},
+            })
+            .ToListAsync();
+        
+        
+        foreach (var userLocationModel in users)
+        {
+            var frozenLocation =
+                await _context.FreezeLocations.FirstOrDefaultAsync(fl =>
+                    fl.UserId == userLocationModel.Id && fl.FreezerUserId == userId);
+
+            if (frozenLocation != null && frozenLocation.IsLocationFrozen)
+            {
+                userLocationModel.Coordinate = new CoordinatesModel
+                    { Latitude = frozenLocation.Latitude!.Value, Longitude = frozenLocation.Longitude!.Value };
+            }
+        }
+
+        return users;
     }
 
-    public Task<Result> DisableInterestBasedLocation(Guid userId)
+    public async Task<Result> DisableInterestBasedLocation(Guid userId)
     {
-        throw new NotImplementedException();
+        var user = await _context.Users
+            .Include(u => u.Interests)
+            .FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null) return new NotFoundException(nameof(SpotMateUser), userId);
+
+        if (!user.IsInterestBasedLocationSharable)
+            return new BadRequestException("Location is already disabled");
+        
+        user.IsInterestBasedLocationSharable = false;
+        await _context.SaveChangesAsync();
+        
+        var friends = await _context.UserFriends
+            .AsNoTracking()
+            .Where(uf => uf.UserId == userId)
+            .Select(uf => uf.FriendId)
+            .ToListAsync();
+        
+        var interestsId = user.Interests.Select(i => i.Id).ToList();
+        await NotifyUserThatYouHaveNoInterests([], interestsId, userId, friends);
+        
+        return Result.Success();
     }
 
     private async Task<Result> ChangeVisibility(Guid userId, bool isInvisible)
@@ -185,6 +248,16 @@ public class ProfileService: IProfileService
 
     private async Task<Result> ChangeInterests(SpotMateUser user, List<Guid> interests)
     {
+        var friends = await _context.UserFriends
+            .AsNoTracking()
+            .Where(uf => uf.UserId == user.Id)
+            .Select(uf => uf.FriendId)
+            .ToListAsync();
+        
+        var interestsId = user.Interests.Select(i => i.Id).ToList();
+        await NotifyUserThatYouHaveInterests(interestsId.Intersect(interests), interests.Except(interestsId), user, friends);
+        await NotifyUserThatYouHaveNoInterests(interests, interestsId.Except(interests), user.Id, friends);
+        
         var dictionaryOfUserInterests = user.Interests.ToDictionary(i => i.Id);
         var dictionaryOfInterests = await _context.Interests.ToDictionaryAsync(i => i.Id);
 
@@ -214,17 +287,21 @@ public class ProfileService: IProfileService
         return Result.Success();
     }
 
-    private async Task NotifyUserThatYouHaveInterests(IEnumerable<Guid> interests, SpotMateUser spotMateUser)
+    private async Task NotifyUserThatYouHaveInterests(IEnumerable<Guid> interestsToExcept, IEnumerable<Guid> interestsToNotify, SpotMateUser spotMateUser, IEnumerable<Guid> friends)
     {
+        
         var users = _context.Users
             .AsNoTracking()
-            .Where(u => u.Id != spotMateUser.Id && u.IsInterestBasedLocationSharable && u.Interests.Select(i => i.Id).Intersect(interests).Any());
+            .Where(u => u.Id != spotMateUser.Id && !friends.Contains(u.Id) && u.IsInterestBasedLocationSharable && u.Interests.Select(i => i.Id).Intersect(interestsToNotify).Any() && !u.Interests.Select(i => i.Id).Intersect(interestsToExcept).Any());
 
-        var userLocationModel = new UserLocationModel
+        var defaultCoordinate = new CoordinatesModel
+            { Latitude = spotMateUser.Latitude, Longitude = spotMateUser.Longitude };
+        
+        var userLocationModel = new UserShortLocationModel
         {
             Id = spotMateUser.Id,
             Avatar = spotMateUser.AvatarFileName != null ? $"{_baseUrlOptions.Url}{spotMateUser.AvatarFileName}" : null,
-            Coordinate = new CoordinatesModel { Latitude = spotMateUser.Latitude, Longitude = spotMateUser.Longitude },
+            Coordinate = defaultCoordinate,
             FullName = spotMateUser.FullName,
             LastOnline = spotMateUser.LastOnline,
             UserName = spotMateUser.UserName,
@@ -236,13 +313,37 @@ public class ProfileService: IProfileService
             var connectionId = await _cache.GetStringAsync(user.Id.ToString());
             if (connectionId != null)
             {
-                
+                var frozenLocation =
+                    await _context.FreezeLocations.FirstOrDefaultAsync(f =>
+                        f.UserId == spotMateUser.Id && f.FreezerUserId == user.Id);
+
+                if (frozenLocation != null && frozenLocation.IsLocationFrozen)
+                {
+                    userLocationModel.Coordinate = new CoordinatesModel
+                        { Latitude = frozenLocation.Latitude!.Value, Longitude = frozenLocation.Longitude!.Value };
+                }
+
+                await _hubContext.Clients.Client(connectionId).ReceiveAddedUserOfSimilarInterests(userLocationModel);
+
+                userLocationModel.Coordinate = defaultCoordinate;
             }   
         }
     }
     
-    private async Task NotifyUserThatYouHaveNoInterests(IEnumerable<Guid> interests, Guid userId)
+    private async Task NotifyUserThatYouHaveNoInterests(IEnumerable<Guid> interestsToExcept, IEnumerable<Guid> interestsToNotify, Guid userId, IEnumerable<Guid> friends)
     {
-        throw new NotImplementedException();
+        var users = await _context.Users
+            .AsNoTracking()
+            .Where(u => u.Id != userId && !friends.Contains(u.Id) && u.IsInterestBasedLocationSharable && u.Interests.Select(i => i.Id).Intersect(interestsToNotify).Any() && !u.Interests.Select(i => i.Id).Intersect(interestsToExcept).Any())
+            .ToListAsync();
+
+        foreach (var user in users)
+        {
+            var connectionId = await _cache.GetStringAsync(user.Id.ToString());
+            if (connectionId != null)
+            {
+                await _hubContext.Clients.Client(connectionId).ReceiveDeletedUserOfSimilarInterestsId(userId);
+            }
+        }   
     }
 }

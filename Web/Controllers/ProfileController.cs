@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SpotMate.Application.DTOs.HubModels;
 using SpotMate.Application.DTOs.Requests;
 using SpotMate.Application.DTOs.Responses;
 using SpotMate.Application.Exceptions;
@@ -69,7 +70,7 @@ public sealed class ProfileController: BaseController
     }
 
     [HttpPost("share-interest-based-location")]
-    public async Task<IActionResult> ShareInterestBasedLocation()
+    public async Task<ActionResult<IEnumerable<UserShortLocationModel>>> ShareInterestBasedLocation()
     {
         var result  = await _profileService.ShareInterestBasedLocation(UserId);
         return result.ToIActionResult();    
