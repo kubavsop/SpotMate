@@ -17,5 +17,7 @@ public sealed class UserDto: UserShortDto
     public DateTime? Birthday { get; init; }
     public Gender? Gender { get; init; }
     [Required]
+    public bool IsInterestBasedLocationSharable { get; init; }
+    [Required]
     public required IEnumerable<InterestDto> Interests { get; init; }
 }

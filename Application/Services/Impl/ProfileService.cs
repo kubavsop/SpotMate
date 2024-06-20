@@ -136,6 +136,24 @@ public class ProfileService: IProfileService
         return Result.Success();
     }
 
+    public async Task<Result> ShareInterestBasedLocation(Guid userId)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null) return new NotFoundException(nameof(SpotMateUser), userId);
+
+        if (user.IsInterestBasedLocationSharable)
+            return new BadRequestException("Location is already Sharable");
+
+        user.IsInterestBasedLocationSharable = true;
+        await _context.SaveChangesAsync();
+        throw new NotImplementedException();
+    }
+
+    public Task<Result> DisableInterestBasedLocation(Guid userId)
+    {
+        throw new NotImplementedException();
+    }
+
     private async Task<Result> ChangeVisibility(Guid userId, bool isInvisible)
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
@@ -180,5 +198,15 @@ public class ProfileService: IProfileService
         }
 
         return Result.Success();
+    }
+
+    private async Task NotifyUserThatYouHaveInterests(IEnumerable<Interest> interests, Guid userId)
+    {
+        throw new NotImplementedException();
+    }
+    
+    private async Task NotifyUserThatYouHaveNoInterests(IEnumerable<Interest> interests, Guid userId)
+    {
+        throw new NotImplementedException();
     }
 }

@@ -144,7 +144,7 @@ public sealed class FriendService: IFriendService
                 UserStatus = u.User.UserStatus,
                 LastOnline = u.User.LastOnline,
                 Coordinate = new CoordinatesModel{Latitude = u.User.Latitude, Longitude = u.User.Longitude},
-                Chat = u.User.ChatUsers.FirstOrDefault(cu => cu.UserId == u.UserId && cu.FriendId == userId) != null ? 
+                Chat = u.User.ChatUsers.Any(cu => cu.UserId == userId && cu.FriendId == u.UserId) ? 
                     u.User.ChatUsers.Where(cu => cu.UserId == userId && cu.FriendId == u.UserId).Select(cu => new ChatShortDto
                     {
                         Id = cu.ChatId,

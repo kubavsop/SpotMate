@@ -15,18 +15,13 @@ public sealed class SpotMateUser: IdentityUser<Guid>, IBaseEntity
     public DateTime Birthday { get; set; } = DateTime.SpecifyKind(new DateTime(2000, 1, 1), DateTimeKind.Utc);
     public Gender Gender { get; set; } = Gender.Male;
     public bool IsInvisible { get; set; } = false;
-
+    public bool IsInterestBasedLocationSharable { get; set; }= false;
     public double Latitude { get; set; }
-    
     public double Longitude { get; set; }
-    
     public DateTime? LastOnline { get; set; }
     public UserStatus? UserStatus { get; set; }
-
     public ICollection<FreezeLocation> UserLocations { get; } = [];
-    
     public ICollection<FreezeLocation> FreezerUserLocations { get; } = [];
-
     public ICollection<ChatUser> ChatUsers { get; } = [];
     public ICollection<DailyStep> DailySteps { get; } = [];
     public ICollection<UserFriend> Friends { get; } = [];

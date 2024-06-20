@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SpotMate.Application.DTOs.Requests;
 using SpotMate.Application.DTOs.Responses;
+using SpotMate.Application.Exceptions;
 using SpotMate.Application.Services;
 using SpotMate.Web.Controllers.Base;
 using SpotMate.Web.Extensions;
@@ -64,6 +65,20 @@ public sealed class ProfileController: BaseController
     public async Task<IActionResult> MakeVisible()
     {
         var result  = await _profileService.MakeVisibleAsync(UserId);
+        return result.ToIActionResult();    
+    }
+
+    [HttpPost("share-interest-based-location")]
+    public async Task<IActionResult> ShareInterestBasedLocation()
+    {
+        var result  = await _profileService.ShareInterestBasedLocation(UserId);
+        return result.ToIActionResult();    
+    }
+
+    [HttpPost("disable-interest-based-location")]
+    public async Task<IActionResult> DisableInterestBasedLocation()
+    {
+        var result  = await _profileService.DisableInterestBasedLocation(UserId);
         return result.ToIActionResult();    
     }
 }
