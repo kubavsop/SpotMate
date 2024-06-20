@@ -5,5 +5,5 @@ namespace SpotMate.Application.DTOs.HubModels;
 public sealed class UserLocationModel: UserShortDto
 {
     public required CoordinatesModel Coordinate { get; set; }
-    public Guid? ChatId { get; set; }
+    public ChatShortDto? Chat { get; set; }
 }

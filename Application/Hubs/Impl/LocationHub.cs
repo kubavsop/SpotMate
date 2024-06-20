@@ -7,6 +7,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 using SpotMate.Application.Context;
 using SpotMate.Application.DTOs.HubModels;
+using SpotMate.Application.DTOs.Responses;
 using SpotMate.Application.Options;
 
 namespace SpotMate.Application.Hubs.Impl;
@@ -68,7 +69,19 @@ public sealed class LocationHub: Hub<ILocationHub>
         {
             var friendConnectionId = await _cache.GetStringAsync(id.ToString());
             if (friendConnectionId == null) continue;
-            userLocationModel.ChatId = (await _context.ChatUsers.FirstOrDefaultAsync(cu => cu.UserId == userId && cu.FriendId == id))?.ChatId;
+            userLocationModel.Chat = await _context.ChatUsers
+                .Where(cu => cu.UserId == userId && cu.FriendId == id)
+                .Select(cu => new ChatShortDto
+                {
+                    Id = cu.ChatId,
+                    Avatar = cu.Friend.AvatarFileName != null
+                        ? $"{_baseUrlOptions.Url}{cu.Friend.AvatarFileName}"
+                        : null,
+                    LastOnline = cu.Friend.LastOnline,
+                    Title = cu.Friend.FullName,
+                    UserStatus = cu.Friend.UserStatus
+                }).FirstOrDefaultAsync();
+            
             await Clients.Client(friendConnectionId).ReceiveFriendLocationChanged(userLocationModel);
         }
     }

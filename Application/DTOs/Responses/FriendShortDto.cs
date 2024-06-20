@@ -2,5 +2,5 @@
 
 public sealed class FriendShortDto: UserShortDto
 {
-    public Guid? ChatId { get; set; }
+    public ChatShortDto? Chat { get; set; }
 }

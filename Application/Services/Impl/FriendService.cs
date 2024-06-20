@@ -49,9 +49,17 @@ public sealed class FriendService: IFriendService
 
         foreach (var friendShortDto in friendsDto)
         {
-            friendShortDto.ChatId =
-                (await _context.ChatUsers.FirstOrDefaultAsync(cu => cu.UserId == userId && cu.FriendId == friendShortDto.Id))
-                ?.ChatId;
+            friendShortDto.Chat =
+                await _context.ChatUsers
+                    .Where(cu => cu.UserId == userId && cu.FriendId == friendShortDto.Id)
+                    .Select(cu => new ChatShortDto
+                    {
+                        Id = cu.ChatId,
+                        Avatar = cu.Friend.AvatarFileName != null ? $"{_baseUrlOptions.Url}{cu.Friend.AvatarFileName}" : null,
+                        LastOnline = cu.Friend.LastOnline,
+                        Title = cu.Friend.FullName,
+                        UserStatus = cu.Friend.UserStatus
+                    }).FirstOrDefaultAsync();
         }
 
         return friendsDto;
@@ -108,9 +116,17 @@ public sealed class FriendService: IFriendService
             await _context.FreezeLocations.FirstOrDefaultAsync(
                 fl => fl.UserId == userId && fl.FreezerUserId == friendId);
         friend.IsLocationFrozen = freezeLocation?.IsLocationFrozen ?? false;
-        friend.ChatId =
-            (await _context.ChatUsers.FirstOrDefaultAsync(cu => cu.UserId == userId && cu.FriendId == friendId))
-            ?.ChatId;
+        friend.Chat =
+            await _context.ChatUsers
+                .Where(cu => cu.UserId == userId && cu.FriendId == friendId)
+                .Select(cu => new ChatShortDto
+                {
+                    Id = cu.ChatId,
+                    Avatar = cu.Friend.AvatarFileName != null ? $"{_baseUrlOptions.Url}{cu.Friend.AvatarFileName}" : null,
+                    LastOnline = cu.Friend.LastOnline,
+                    Title = cu.Friend.FullName,
+                    UserStatus = cu.Friend.UserStatus
+                }).FirstOrDefaultAsync();
         return friend;
     }
     
@@ -128,7 +144,15 @@ public sealed class FriendService: IFriendService
                 UserStatus = u.User.UserStatus,
                 LastOnline = u.User.LastOnline,
                 Coordinate = new CoordinatesModel{Latitude = u.User.Latitude, Longitude = u.User.Longitude},
-                ChatId = u.User.ChatUsers.FirstOrDefault(cu => cu.UserId == u.UserId && cu.FriendId == userId) != null ? u.User.ChatUsers.First(cu => cu.UserId == u.UserId && cu.FriendId == userId).ChatId : null
+                Chat = u.User.ChatUsers.FirstOrDefault(cu => cu.UserId == u.UserId && cu.FriendId == userId) != null ? 
+                    u.User.ChatUsers.Where(cu => cu.UserId == userId && cu.FriendId == u.UserId).Select(cu => new ChatShortDto
+                    {
+                        Id = cu.ChatId,
+                        Avatar = cu.Friend.AvatarFileName != null ? $"{_baseUrlOptions.Url}{cu.Friend.AvatarFileName}" : null,
+                        LastOnline = cu.Friend.LastOnline,
+                        Title = cu.Friend.FullName,
+                        UserStatus = cu.Friend.UserStatus
+                    }).FirstOrDefault() : null
             })
             .ToListAsync();
         

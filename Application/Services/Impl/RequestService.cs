@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Options;
 using SpotMate.Application.Context;
 using SpotMate.Application.DTOs.HubModels;
 using SpotMate.Application.DTOs.Requests;
@@ -10,6 +11,7 @@ using SpotMate.Application.Exceptions;
 using SpotMate.Application.Hubs;
 using SpotMate.Application.Hubs.Impl;
 using SpotMate.Application.OperationResult;
+using SpotMate.Application.Options;
 using SpotMate.Domain.Entities;
 using SpotMate.Domain.Enums;
 
@@ -21,13 +23,15 @@ public sealed class RequestService: IRequestService
     private readonly IHubContext<LocationHub, ILocationHub> _hubContext; 
     private readonly IApplicationDbContext _context;
     private readonly IMapper _mapper;
+    private readonly BaseUrlOptions _baseUrlOptions;
 
-    public RequestService(IApplicationDbContext context, IMapper mapper, IDistributedCache cache, IHubContext<LocationHub, ILocationHub> hubContext)
+    public RequestService(IApplicationDbContext context, IMapper mapper, IDistributedCache cache, IHubContext<LocationHub, ILocationHub> hubContext, IOptions<BaseUrlOptions> baseUrlOptions)
     {
         _context = context;
         _mapper = mapper;
         _cache = cache;
         _hubContext = hubContext;
+        _baseUrlOptions = baseUrlOptions.Value;
     }
 
     public async Task<Result> AcceptRequestAsync(Guid requestId, Guid userId)
@@ -66,7 +70,17 @@ public sealed class RequestService: IRequestService
         {
             var senderUser = (await _context.Users.FirstOrDefaultAsync(u => u.Id == senderId))!;
             var senderUserDto = _mapper.Map<UserLocationModel>(senderUser);
-            senderUserDto.ChatId = (await _context.ChatUsers.FirstOrDefaultAsync(cu => cu.UserId == senderId && cu.FriendId == receiverId))?.ChatId;
+            senderUserDto.Chat = await _context.ChatUsers
+                .Where(cu => cu.UserId == receiverId && cu.FriendId == senderId)
+                .Select(cu => new ChatShortDto
+                {
+                    Id = cu.ChatId,
+                    Avatar = cu.Friend.AvatarFileName != null ? $"{_baseUrlOptions.Url}{cu.Friend.AvatarFileName}" : null,
+                    LastOnline = cu.Friend.LastOnline,
+                    Title = cu.Friend.FullName,
+                    UserStatus = cu.Friend.UserStatus
+                }).FirstOrDefaultAsync();
+            
             await _hubContext.Clients.Client(receiverConnectionId).ReceiveAddedFriend(senderUserDto);
         }
 
@@ -74,7 +88,16 @@ public sealed class RequestService: IRequestService
         {
             var receiverUser = (await _context.Users.FirstOrDefaultAsync(u => u.Id == receiverId))!;
             var receiverUserDto = _mapper.Map<UserLocationModel>(receiverUser);
-            receiverUserDto.ChatId = (await _context.ChatUsers.FirstOrDefaultAsync(cu => cu.UserId == receiverId && cu.FriendId == senderId))?.ChatId;
+            receiverUserDto.Chat = await _context.ChatUsers
+                .Where(cu => cu.UserId == senderId && cu.FriendId == receiverId)
+                .Select(cu => new ChatShortDto
+                {
+                    Id = cu.ChatId,
+                    Avatar = cu.Friend.AvatarFileName != null ? $"{_baseUrlOptions.Url}{cu.Friend.AvatarFileName}" : null,
+                    LastOnline = cu.Friend.LastOnline,
+                    Title = cu.Friend.FullName,
+                    UserStatus = cu.Friend.UserStatus
+                }).FirstOrDefaultAsync();
             await _hubContext.Clients.Client(senderConnectionId).ReceiveAddedFriend(receiverUserDto);
         }
 

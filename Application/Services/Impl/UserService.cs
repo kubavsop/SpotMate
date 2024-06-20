@@ -184,7 +184,16 @@ public class UserService: IUserService
         {
             var senderUser = (await _context.Users.FirstOrDefaultAsync(u => u.Id == senderId))!;
             var senderUserDto = _mapper.Map<UserLocationModel>(senderUser);
-            senderUserDto.ChatId = (await _context.ChatUsers.FirstOrDefaultAsync(cu => cu.UserId == senderId && cu.FriendId == receiverId))?.ChatId;
+            senderUserDto.Chat = await _context.ChatUsers
+                .Where(cu => cu.UserId == receiverId && cu.FriendId == senderId)
+                .Select(cu => new ChatShortDto
+                {
+                    Id = cu.ChatId,
+                    Avatar = cu.Friend.AvatarFileName != null ? $"{_baseUrlOptions.Url}{cu.Friend.AvatarFileName}" : null,
+                    LastOnline = cu.Friend.LastOnline,
+                    Title = cu.Friend.FullName,
+                    UserStatus = cu.Friend.UserStatus
+                }).FirstOrDefaultAsync();
             await _hubContext.Clients.Client(receiverConnectionId).ReceiveAddedFriend(senderUserDto);
         }
 
@@ -192,7 +201,16 @@ public class UserService: IUserService
         {
             var receiverUser = (await _context.Users.FirstOrDefaultAsync(u => u.Id == receiverId))!;
             var receiverUserDto = _mapper.Map<UserLocationModel>(receiverUser);
-            receiverUserDto.ChatId = (await _context.ChatUsers.FirstOrDefaultAsync(cu => cu.UserId == receiverId && cu.FriendId == senderId))?.ChatId;
+            receiverUserDto.Chat = await _context.ChatUsers
+                .Where(cu => cu.UserId == senderId && cu.FriendId == receiverId)
+                .Select(cu => new ChatShortDto
+                {
+                    Id = cu.ChatId,
+                    Avatar = cu.Friend.AvatarFileName != null ? $"{_baseUrlOptions.Url}{cu.Friend.AvatarFileName}" : null,
+                    LastOnline = cu.Friend.LastOnline,
+                    Title = cu.Friend.FullName,
+                    UserStatus = cu.Friend.UserStatus
+                }).FirstOrDefaultAsync();
             await _hubContext.Clients.Client(senderConnectionId).ReceiveAddedFriend(receiverUserDto);
         }
 

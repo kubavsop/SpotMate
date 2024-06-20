@@ -14,7 +14,7 @@ public sealed class FriendDto: UserShortDto
     public DateTime? Birthday { get; init; }
     public Gender? Gender { get; init; }
     
-    public Guid? ChatId { get; set; }
+    public ChatShortDto? Chat { get; set; }
     
     [Required]
     public required IEnumerable<InterestDto> Interests { get; init; }
