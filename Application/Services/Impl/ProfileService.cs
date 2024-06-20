@@ -200,12 +200,12 @@ public class ProfileService: IProfileService
         return Result.Success();
     }
 
-    private async Task NotifyUserThatYouHaveInterests(IEnumerable<Interest> interests, Guid userId)
+    private async Task NotifyUserThatYouHaveInterests(IEnumerable<Guid> interests, Guid userId)
     {
         throw new NotImplementedException();
     }
     
-    private async Task NotifyUserThatYouHaveNoInterests(IEnumerable<Interest> interests, Guid userId)
+    private async Task NotifyUserThatYouHaveNoInterests(IEnumerable<Guid> interests, Guid userId)
     {
         throw new NotImplementedException();
     }

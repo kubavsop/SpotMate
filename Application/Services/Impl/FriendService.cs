@@ -134,18 +134,18 @@ public sealed class FriendService: IFriendService
     {
         var friends = await _context.UserFriends
             .AsNoTracking()
-            .Where(u => u.FriendId == userId)
+            .Where(u => u.UserId == userId)
             .Select(u => new UserLocationModel
             {
                 Id = u.UserId,
-                UserName = u.User.UserName,
-                Avatar = u.User.AvatarFileName != null ? $"{_baseUrlOptions.Url}{u.User.AvatarFileName}" : null,
-                FullName = u.User.FullName,
-                UserStatus = u.User.UserStatus,
-                LastOnline = u.User.LastOnline,
-                Coordinate = new CoordinatesModel{Latitude = u.User.Latitude, Longitude = u.User.Longitude},
-                Chat = u.User.ChatUsers.Any(cu => cu.UserId == userId && cu.FriendId == u.UserId) ? 
-                    u.User.ChatUsers.Where(cu => cu.UserId == userId && cu.FriendId == u.UserId).Select(cu => new ChatShortDto
+                UserName = u.Friend.UserName,
+                Avatar = u.Friend.AvatarFileName != null ? $"{_baseUrlOptions.Url}{u.Friend.AvatarFileName}" : null,
+                FullName = u.Friend.FullName,
+                UserStatus = u.Friend.UserStatus,
+                LastOnline = u.Friend.LastOnline,
+                Coordinate = new CoordinatesModel{Latitude = u.Friend.Latitude, Longitude = u.Friend.Longitude},
+                Chat = u.User.ChatUsers.Any(cu => cu.UserId == userId && cu.FriendId == u.FriendId) ? 
+                    u.User.ChatUsers.Where(cu => cu.UserId == userId && cu.FriendId == u.FriendId).Select(cu => new ChatShortDto
                     {
                         Id = cu.ChatId,
                         Avatar = cu.Friend.AvatarFileName != null ? $"{_baseUrlOptions.Url}{cu.Friend.AvatarFileName}" : null,
