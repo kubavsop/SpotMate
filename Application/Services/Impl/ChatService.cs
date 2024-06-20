@@ -134,7 +134,7 @@ public sealed class ChatService: IChatService
                 m.IsUnread = false;
             }
             
-            linkedList.AddFirst(new MessageDto
+            linkedList.AddLast(new MessageDto
             {
                 Id = m.Id,
                 CreateTime = m.CreateTime,
