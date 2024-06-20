@@ -167,7 +167,7 @@ public sealed class FriendService: IFriendService
             {
                 Id = u.UserId,
                 UserName = u.User.UserName,
-                Avatar = $"{_baseUrlOptions.Url}{u.User.AvatarFileName}",
+                Avatar = u.User.AvatarFileName != null ? $"{_baseUrlOptions.Url}{u.User.AvatarFileName}" : null,
                 FullName = u.User.FullName,
                 UserStatus = u.User.UserStatus,
                 LastOnline = u.User.LastOnline,
