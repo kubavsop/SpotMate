@@ -59,4 +59,18 @@ public sealed class UserController: BaseController
         var result = await _userService.DeclineRequestAsync(id, UserId);
         return result.ToIActionResult();    
     }
+    
+    [HttpPost("{id:guid}/freeze-location")]
+    public async Task<IActionResult> FreezeLocation(Guid id)
+    {
+        var result = await _userService.FreezeLocationAsync(id, UserId);
+        return result.ToIActionResult();
+    }
+    
+    [HttpPost("{id:guid}/unfreeze-location")]
+    public async Task<IActionResult> UnFreezeLocation(Guid id)
+    {
+        var result = await _userService.UnFreezeLocationAsync(id, UserId);
+        return result.ToIActionResult();    
+    }
 }

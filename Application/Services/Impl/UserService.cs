@@ -133,6 +133,10 @@ public class UserService: IUserService
                         : user.SentRequests.First(r => r.ReceiverUserId == myId).RequestStatus
                 }
                 : null;
+        var freezeLocation =
+            await _context.FreezeLocations.FirstOrDefaultAsync(
+                fl => fl.UserId == myId && fl.FreezerUserId == userId);
+        userFull.IsLocationFrozen = freezeLocation?.IsLocationFrozen ?? false;
         
         return userFull;
     }
@@ -204,6 +208,61 @@ public class UserService: IUserService
 
         await _context.SaveChangesAsync();
         
+        return Result.Success();    
+    }
+    
+    public async Task<Result> FreezeLocationAsync(Guid freezerUserId, Guid userId)
+    {
+        var freezeLocation = await _context.FreezeLocations
+            .Include(fl => fl.User)
+            .FirstOrDefaultAsync(fl => fl.UserId == userId && fl.FreezerUserId == freezerUserId);
+        
+        if (freezeLocation == null)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null) return new NotFoundException(nameof(SpotMateUser));
+
+            await _context.FreezeLocations.AddAsync(new FreezeLocation
+            {
+                UserId = userId,
+                FreezerUserId = freezerUserId,
+                Longitude = user.Longitude,
+                Latitude = user.Latitude,
+                IsLocationFrozen = true
+            });
+            await _context.SaveChangesAsync();
+            
+            return Result.Success();
+        }
+        
+        if (freezeLocation.IsLocationFrozen)
+        {
+            return new BadRequestException("The location is already frozen");
+        }
+
+        freezeLocation.Latitude = freezeLocation.User.Latitude;
+        freezeLocation.Longitude = freezeLocation.User.Longitude;
+        freezeLocation.IsLocationFrozen = true;
+        await _context.SaveChangesAsync();
+
+        return Result.Success();    
+    }
+
+    public async Task<Result> UnFreezeLocationAsync(Guid freezerUserId, Guid userId)
+    {
+        var freezeLocation = await _context.FreezeLocations
+            .FirstOrDefaultAsync(fl => fl.UserId == userId && fl.FreezerUserId == freezerUserId);
+        
+        if (freezeLocation is not { IsLocationFrozen: true })
+        {
+            return new BadRequestException("The location is already unfrozen");
+        }
+
+        freezeLocation.Latitude = null;
+        freezeLocation.Longitude = null;
+        freezeLocation.IsLocationFrozen = false;
+        await _context.SaveChangesAsync();
+
         return Result.Success();    
     }
 }

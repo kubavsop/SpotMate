@@ -12,7 +12,5 @@ public interface IFriendService
 
     Task<Result> DeleteFriendAsync(Guid friendId, Guid userId);
     Task<Result<FriendDto>> GetFriend(Guid friendId, Guid userId);
-    Task<Result> FreezeLocationAsync(Guid friendId, Guid userId);
-    Task<Result> UnFreezeLocationAsync(Guid friendId, Guid userId);
     Task<Result<IEnumerable<UserLocationModel>>> GetFriendsLocation(Guid userId);
 }

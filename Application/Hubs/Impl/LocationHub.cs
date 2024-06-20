@@ -60,7 +60,7 @@ public sealed class LocationHub: Hub<ILocationHub>
         var userLocationModel = _mapper.Map<UserLocationModel>(user);
         var friendsToNotify = await _context.UserFriends
             .AsNoTracking()
-            .Where(u => u.UserId == userId && !u.IsLocationFrozen)
+            .Where(u => u.UserId == userId && !u.User.UserLocations.Any(fl => fl.IsLocationFrozen && fl.FreezerUserId == u.FriendId))
             .Select(u => u.Friend.Id)
             .ToListAsync();
         

@@ -13,4 +13,6 @@ public interface IUserService
     
     Task<Result> AcceptRequestAsync(Guid userId, Guid myId);
     Task<Result> DeclineRequestAsync(Guid userId, Guid myId);
+    Task<Result> FreezeLocationAsync(Guid freezerUserId, Guid userId);
+    Task<Result> UnFreezeLocationAsync(Guid freezerUserId, Guid userId);
 }

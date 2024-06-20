@@ -23,6 +23,10 @@ public sealed class SpotMateUser: IdentityUser<Guid>, IBaseEntity
     public DateTime? LastOnline { get; set; }
     public UserStatus? UserStatus { get; set; }
 
+    public ICollection<FreezeLocation> UserLocations { get; } = [];
+    
+    public ICollection<FreezeLocation> FreezerUserLocations { get; } = [];
+
     public ICollection<ChatUser> ChatUsers { get; } = [];
     public ICollection<DailyStep> DailySteps { get; } = [];
     public ICollection<UserFriend> Friends { get; } = [];

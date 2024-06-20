@@ -104,60 +104,16 @@ public sealed class FriendService: IFriendService
         }
 
         var friend = _mapper.Map<FriendDto>(userFriend.Friend);
-        friend.IsLocationFrozen = userFriend.IsLocationFrozen;
+        var freezeLocation =
+            await _context.FreezeLocations.FirstOrDefaultAsync(
+                fl => fl.UserId == userId && fl.FreezerUserId == friendId);
+        friend.IsLocationFrozen = freezeLocation?.IsLocationFrozen ?? false;
         friend.ChatId =
             (await _context.ChatUsers.FirstOrDefaultAsync(cu => cu.UserId == userId && cu.FriendId == friendId))
             ?.ChatId;
         return friend;
     }
-
-    public async Task<Result> FreezeLocationAsync(Guid friendId, Guid userId)
-    {
-        var userFriend = await _context.UserFriends
-            .Include(uf => uf.User)
-            .FirstOrDefaultAsync(uf => uf.UserId == userId && uf.FriendId == friendId);
-        
-        if (userFriend == null)
-        {
-            return new BadRequestException("The user is not your friend");
-        }
-        
-        if (userFriend.IsLocationFrozen)
-        {
-            return new BadRequestException("The location is already frozen");
-        }
-
-        userFriend.Latitude = userFriend.User.Latitude;
-        userFriend.Longitude = userFriend.User.Longitude;
-        userFriend.IsLocationFrozen = true;
-        await _context.SaveChangesAsync();
-
-        return Result.Success();    
-    }
-
-    public async Task<Result> UnFreezeLocationAsync(Guid friendId, Guid userId)
-    {
-        var userFriend = await _context.UserFriends
-            .FirstOrDefaultAsync(uf => uf.UserId == userId && uf.FriendId == friendId);
-        
-        if (userFriend == null)
-        {
-            return new BadRequestException("The user is not your friend");
-        }
-
-        if (!userFriend.IsLocationFrozen)
-        {
-            return new BadRequestException("The location is already unfrozen");
-        }
-
-        userFriend.Latitude = null;
-        userFriend.Longitude = null;
-        userFriend.IsLocationFrozen = false;
-        await _context.SaveChangesAsync();
-
-        return Result.Success();    
-    }
-
+    
     public async Task<Result<IEnumerable<UserLocationModel>>> GetFriendsLocation(Guid userId)
     {
         var friends = await _context.UserFriends
@@ -171,11 +127,24 @@ public sealed class FriendService: IFriendService
                 FullName = u.User.FullName,
                 UserStatus = u.User.UserStatus,
                 LastOnline = u.User.LastOnline,
-                Coordinate = u.IsLocationFrozen ? new CoordinatesModel{Latitude = u.Latitude!.Value, Longitude = u.Longitude!.Value} : new CoordinatesModel{Latitude = u.User.Latitude, Longitude = u.User.Longitude},
+                Coordinate = new CoordinatesModel{Latitude = u.User.Latitude, Longitude = u.User.Longitude},
                 ChatId = u.User.ChatUsers.FirstOrDefault(cu => cu.UserId == u.UserId && cu.FriendId == userId) != null ? u.User.ChatUsers.First(cu => cu.UserId == u.UserId && cu.FriendId == userId).ChatId : null
             })
             .ToListAsync();
+        
+        foreach (var friend in friends)
+        {
+            var frozenLocation =
+                await _context.FreezeLocations.FirstOrDefaultAsync(fl =>
+                    fl.UserId == friend.Id && fl.FreezerUserId == userId);
 
+            if (frozenLocation != null && frozenLocation.IsLocationFrozen)
+            {
+                friend.Coordinate = new CoordinatesModel
+                    { Latitude = frozenLocation.Latitude!.Value, Longitude = frozenLocation.Longitude!.Value };
+            }
+        }
+        
         return friends;
     }
 }

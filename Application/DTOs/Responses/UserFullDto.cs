@@ -12,6 +12,8 @@ public class UserFullDto: UserShortDto
     public Gender? Gender { get; init; }
     
     public ShortRequestDto? Request { get; set; }
+    [Required]
+    public bool IsLocationFrozen { get; set; }
     
     [Required]
     public required IEnumerable<InterestDto> Interests { get; init; }
