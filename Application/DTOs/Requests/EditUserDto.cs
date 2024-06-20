@@ -26,7 +26,5 @@ public class EditUserDto
     [Required]
     public required Gender Gender { get; init; }
     
-    public UserStatus? UserStatus { get; init; }
-    
     private DateTime _birthday;
 }

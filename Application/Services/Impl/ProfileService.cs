@@ -7,6 +7,7 @@ using SpotMate.Application.DTOs.Responses;
 using SpotMate.Application.Exceptions;
 using SpotMate.Application.OperationResult;
 using SpotMate.Domain.Entities;
+using SpotMate.Domain.Enums;
 
 namespace SpotMate.Application.Services.Impl;
 
@@ -54,7 +55,6 @@ public class ProfileService: IProfileService
         user.FullName = dto.FullName;
         user.Birthday = dto.Birthday;
         user.Gender = dto.Gender;
-        user.UserStatus = dto.UserStatus;
         
         var interestsResult = await ChangeInterests(user, dto.Interests.Distinct().ToList());
         if (interestsResult.IsFailure) return interestsResult.Exception;
@@ -119,6 +119,21 @@ public class ProfileService: IProfileService
     public Task<Result> MakeInvisibleAsync(Guid userId)
     {
         return ChangeVisibility(userId, true);
+    }
+
+    public async Task<Result> EditUserStatus(UserStatus? userStatus, Guid userId)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null)
+        {
+            return new NotFoundException(nameof(SpotMateUser), userId);
+        }
+
+        user.UserStatus = userStatus;
+
+        await _context.SaveChangesAsync();
+
+        return Result.Success();
     }
 
     private async Task<Result> ChangeVisibility(Guid userId, bool isInvisible)

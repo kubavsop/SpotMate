@@ -31,6 +31,13 @@ public sealed class ProfileController: BaseController
         var result = await _profileService.EditProfileAsync(editUserDto, UserId);
         return result.ToIActionResult();
     }
+
+    [HttpPut("user-status")]
+    public async Task<IActionResult> EditUserStatus(EditStatusDto editStatusDto)
+    {
+        var result = await _profileService.EditUserStatus(editStatusDto.UserStatus, UserId);
+        return result.ToIActionResult();
+    }
     
     [HttpPost("avatar")]
     public async Task<IActionResult> UploadAvatar(UploadAvatarDto uploadAvatarDto)
