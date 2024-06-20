@@ -1,11 +1,18 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Options;
 using SpotMate.Application.Context;
+using SpotMate.Application.DTOs.HubModels;
 using SpotMate.Application.DTOs.Requests;
 using SpotMate.Application.DTOs.Responses;
 using SpotMate.Application.Exceptions;
+using SpotMate.Application.Hubs;
+using SpotMate.Application.Hubs.Impl;
 using SpotMate.Application.OperationResult;
+using SpotMate.Application.Options;
 using SpotMate.Domain.Entities;
 using SpotMate.Domain.Enums;
 
@@ -13,17 +20,24 @@ namespace SpotMate.Application.Services.Impl;
 
 public class ProfileService: IProfileService
 {
+    private readonly IDistributedCache _cache;
     private readonly IApplicationDbContext _context;
     private readonly IMapper _mapper;
     private readonly UserManager<SpotMateUser> _userManager;
     private readonly IFileProvider _fileProvider;
+    private readonly IHubContext<LocationHub, ILocationHub> _hubContext;
+    private readonly BaseUrlOptions _baseUrlOptions;
 
-    public ProfileService(IApplicationDbContext context, IMapper mapper, UserManager<SpotMateUser> userManager, IFileProvider fileProvider)
+
+    public ProfileService(IApplicationDbContext context, IMapper mapper, UserManager<SpotMateUser> userManager, IFileProvider fileProvider, IDistributedCache cache, IHubContext<LocationHub, ILocationHub> hubContext, IOptions<BaseUrlOptions> baseUrlOptions)
     {
         _context = context;
         _mapper = mapper;
         _userManager = userManager;
         _fileProvider = fileProvider;
+        _cache = cache;
+        _hubContext = hubContext;
+        _baseUrlOptions = baseUrlOptions.Value;
     }
 
     public async Task<Result<UserDto>> GetProfileAsync(Guid userId)
@@ -200,9 +214,31 @@ public class ProfileService: IProfileService
         return Result.Success();
     }
 
-    private async Task NotifyUserThatYouHaveInterests(IEnumerable<Guid> interests, Guid userId)
+    private async Task NotifyUserThatYouHaveInterests(IEnumerable<Guid> interests, SpotMateUser spotMateUser)
     {
-        throw new NotImplementedException();
+        var users = _context.Users
+            .AsNoTracking()
+            .Where(u => u.Id != spotMateUser.Id && u.IsInterestBasedLocationSharable && u.Interests.Select(i => i.Id).Intersect(interests).Any());
+
+        var userLocationModel = new UserLocationModel
+        {
+            Id = spotMateUser.Id,
+            Avatar = spotMateUser.AvatarFileName != null ? $"{_baseUrlOptions.Url}{spotMateUser.AvatarFileName}" : null,
+            Coordinate = new CoordinatesModel { Latitude = spotMateUser.Latitude, Longitude = spotMateUser.Longitude },
+            FullName = spotMateUser.FullName,
+            LastOnline = spotMateUser.LastOnline,
+            UserName = spotMateUser.UserName,
+            UserStatus = spotMateUser.UserStatus
+        };
+        
+        foreach (var user in users)
+        {
+            var connectionId = await _cache.GetStringAsync(user.Id.ToString());
+            if (connectionId != null)
+            {
+                
+            }   
+        }
     }
     
     private async Task NotifyUserThatYouHaveNoInterests(IEnumerable<Guid> interests, Guid userId)

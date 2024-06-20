@@ -137,7 +137,7 @@ public sealed class FriendService: IFriendService
             .Where(u => u.UserId == userId)
             .Select(u => new UserLocationModel
             {
-                Id = u.UserId,
+                Id = u.FriendId,
                 UserName = u.Friend.UserName,
                 Avatar = u.Friend.AvatarFileName != null ? $"{_baseUrlOptions.Url}{u.Friend.AvatarFileName}" : null,
                 FullName = u.Friend.FullName,
