@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SpotMate.Application.DTOs.HubModels;
 using SpotMate.Application.DTOs.Requests;
 using SpotMate.Application.DTOs.Responses;
 using SpotMate.Application.Services;
@@ -30,6 +31,13 @@ public sealed class UserController: BaseController
     {
         var result = await _userService.GetUserByIdAsync(id, UserId);
         return result.ToIActionResult();
+    }
+    
+    [HttpGet("interest-based-location")]
+    public async Task<ActionResult<IEnumerable<UserShortLocationModel>>> GetInterestBaseLocations()
+    {
+        var result  = await _userService.GetInterestBaseLocations(UserId);
+        return result.ToIActionResult();    
     }
 
     [HttpPost("{id:guid}/request")]

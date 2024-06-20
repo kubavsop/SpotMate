@@ -70,7 +70,7 @@ public sealed class ProfileController: BaseController
     }
 
     [HttpPost("share-interest-based-location")]
-    public async Task<ActionResult<IEnumerable<UserShortLocationModel>>> ShareInterestBasedLocation()
+    public async Task<IActionResult> ShareInterestBasedLocation()
     {
         var result  = await _profileService.ShareInterestBasedLocation(UserId);
         return result.ToIActionResult();    

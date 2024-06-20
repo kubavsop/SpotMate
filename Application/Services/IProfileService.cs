@@ -15,6 +15,6 @@ public interface IProfileService
     Task<Result> MakeVisibleAsync(Guid userId);
     Task<Result> MakeInvisibleAsync(Guid userId);
     Task<Result> EditUserStatus(UserStatus? userStatus, Guid userId);
-    Task<Result<IEnumerable<UserShortLocationModel>>> ShareInterestBasedLocation(Guid userId);
+    Task<Result> ShareInterestBasedLocation(Guid userId);
     Task<Result> DisableInterestBasedLocation(Guid userId);
 }

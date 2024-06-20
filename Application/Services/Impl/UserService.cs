@@ -283,4 +283,57 @@ public class UserService: IUserService
 
         return Result.Success();    
     }
+
+    public async Task<Result<IEnumerable<UserShortLocationModel>>> GetInterestBaseLocations(Guid userId)
+    {
+        var user = await _context.Users
+            .AsNoTracking()
+            .Include(u => u.Interests)
+            .FirstOrDefaultAsync(u => u.Id == userId);
+        
+        if (user == null) return new NotFoundException(nameof(SpotMateUser), userId);
+        if (!user.IsInterestBasedLocationSharable)
+            return new BadRequestException("IsInterestBasedLocationSharable must be true");
+        
+        
+        var friends = await _context.UserFriends
+            .AsNoTracking()
+            .Where(uf => uf.UserId == userId)
+            .Select(uf => uf.FriendId)
+            .ToListAsync();
+        
+        var interestsId = user.Interests.Select(i => i.Id).ToList();
+        
+        var users = await _context.Users
+            .AsNoTracking()
+            .Where(u =>
+                u.Id != userId && u.IsInterestBasedLocationSharable && !friends.Contains(u.Id) && u.Interests.Select(i => i.Id).Intersect(interestsId).Any())
+            .Select(u => new UserShortLocationModel
+            {
+                Id = u.Id,
+                UserName = u.UserName,
+                Avatar = u.AvatarFileName != null ? $"{_baseUrlOptions.Url}{u.AvatarFileName}" : null,
+                FullName = u.FullName,
+                UserStatus = u.UserStatus,
+                LastOnline = u.LastOnline,
+                Coordinate = new CoordinatesModel{Latitude = u.Latitude, Longitude = u.Longitude},
+            })
+            .ToListAsync();
+        
+        
+        foreach (var userLocationModel in users)
+        {
+            var frozenLocation =
+                await _context.FreezeLocations.FirstOrDefaultAsync(fl =>
+                    fl.UserId == userLocationModel.Id && fl.FreezerUserId == userId);
+
+            if (frozenLocation != null && frozenLocation.IsLocationFrozen)
+            {
+                userLocationModel.Coordinate = new CoordinatesModel
+                    { Latitude = frozenLocation.Latitude!.Value, Longitude = frozenLocation.Longitude!.Value };
+            }
+        }
+
+        return users;
+    }
 }

@@ -1,4 +1,5 @@
-﻿using SpotMate.Application.DTOs.Requests;
+﻿using SpotMate.Application.DTOs.HubModels;
+using SpotMate.Application.DTOs.Requests;
 using SpotMate.Application.DTOs.Responses;
 using SpotMate.Application.OperationResult;
 
@@ -15,4 +16,5 @@ public interface IUserService
     Task<Result> DeclineRequestAsync(Guid userId, Guid myId);
     Task<Result> FreezeLocationAsync(Guid freezerUserId, Guid userId);
     Task<Result> UnFreezeLocationAsync(Guid freezerUserId, Guid userId);
+    Task<Result<IEnumerable<UserShortLocationModel>>> GetInterestBaseLocations(Guid userId);
 }
