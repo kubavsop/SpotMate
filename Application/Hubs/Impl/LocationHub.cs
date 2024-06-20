@@ -48,7 +48,11 @@ public sealed class LocationHub: Hub<ILocationHub>
     public async Task UpdateLocation(CoordinatesModel coordinates)
     {
         var userId = UserId;
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        var user = await _context.Users
+            .AsNoTracking()
+            .Include(u => u.Interests)
+            .FirstOrDefaultAsync(u => u.Id == userId);
+        
         if (user == null || user.IsInvisible)
         {
             return;
@@ -83,6 +87,34 @@ public sealed class LocationHub: Hub<ILocationHub>
                 }).FirstOrDefaultAsync();
             
             await Clients.Client(friendConnectionId).ReceiveFriendLocationChanged(userLocationModel);
+        }
+
+        var interestsId = user.Interests.Select(i => i.Id);
+        var usersToNotify = await _context.Users
+            .AsNoTracking()
+            .Where(u =>
+                u.Id != userId && u.IsInterestBasedLocationSharable && !friendsToNotify.Contains(u.Id) &&
+                u.Interests.Select(i => i.Id).Intersect(interestsId).Any() && !u.FreezerUserLocations.Any(fl => fl.IsLocationFrozen && fl.UserId == userId))
+            .Select(u => u.Id)
+            .ToListAsync();
+
+        var userShortLocationModel = new UserShortLocationModel
+        {
+            Id = userLocationModel.Id,
+            UserName = userLocationModel.UserName,
+            Avatar = userLocationModel.Avatar,
+            FullName = userLocationModel.FullName,
+            UserStatus = userLocationModel.UserStatus,
+            LastOnline = userLocationModel.LastOnline,
+            Coordinate = userLocationModel.Coordinate,
+        };
+
+        foreach (var id in usersToNotify)
+        {
+            var userToNotifyConnectionId = await _cache.GetStringAsync(id.ToString());
+            if (userToNotifyConnectionId == null) continue;
+            await Clients.Client(userToNotifyConnectionId)
+                .ReceiveUserOfSimilarInterestsLocationChanged(userShortLocationModel);
         }
     }
     
