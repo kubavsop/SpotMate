@@ -65,10 +65,25 @@ public sealed class RequestService: IRequestService
         
         var receiverConnectionId = await _cache.GetStringAsync(receiverId.ToString());
         var senderConnectionId = await _cache.GetStringAsync(senderId.ToString());
+        
+        var flag = false;
+        var senderUser = (await _context.Users
+            .AsNoTracking()
+            .Include(u => u.Interests)
+            .FirstOrDefaultAsync(u => u.Id == senderId))!;
+        var receiverUser = (await _context.Users
+            .AsNoTracking()
+            .Include(u => u.Interests)
+            .FirstOrDefaultAsync(u => u.Id == receiverId))!;
+
+        if (senderUser.IsInterestBasedLocationSharable && receiverUser.IsInterestBasedLocationSharable &&
+            senderUser.Interests.Intersect(receiverUser.Interests).Any())
+        {
+            flag = true;
+        }
 
         if (receiverConnectionId != null)
         {
-            var senderUser = (await _context.Users.FirstOrDefaultAsync(u => u.Id == senderId))!;
             var senderUserDto = _mapper.Map<UserLocationModel>(senderUser);
             senderUserDto.Chat = await _context.ChatUsers
                 .Where(cu => cu.UserId == receiverId && cu.FriendId == senderId)
@@ -91,12 +106,16 @@ public sealed class RequestService: IRequestService
                     { Latitude = frozenLocation.Latitude!.Value, Longitude = frozenLocation.Longitude!.Value };
             }
             
+            if (flag)
+            {
+                await _hubContext.Clients.Client(receiverConnectionId).ReceiveDeletedUserOfSimilarInterestsId(senderId);
+            }
+            
             await _hubContext.Clients.Client(receiverConnectionId).ReceiveAddedFriend(senderUserDto);
         }
 
         if (senderConnectionId != null)
         {
-            var receiverUser = (await _context.Users.FirstOrDefaultAsync(u => u.Id == receiverId))!;
             var receiverUserDto = _mapper.Map<UserLocationModel>(receiverUser);
             receiverUserDto.Chat = await _context.ChatUsers
                 .Where(cu => cu.UserId == senderId && cu.FriendId == receiverId)
@@ -117,6 +136,11 @@ public sealed class RequestService: IRequestService
             {
                 receiverUserDto.Coordinate = new CoordinatesModel
                     { Latitude = frozenLocation.Latitude!.Value, Longitude = frozenLocation.Longitude!.Value };
+            }
+            
+            if (flag)
+            {
+                await _hubContext.Clients.Client(senderConnectionId).ReceiveDeletedUserOfSimilarInterestsId(receiverId);
             }
             
             await _hubContext.Clients.Client(senderConnectionId).ReceiveAddedFriend(receiverUserDto);

@@ -67,9 +67,15 @@ public sealed class FriendService: IFriendService
 
     public async Task<Result> DeleteFriendAsync(Guid friendId, Guid userId)
     {
-        var firstUserFriend = await _context.UserFriends.FirstOrDefaultAsync(uf => uf.UserId == userId &&
+        var firstUserFriend = await _context.UserFriends
+            .Include(uf => uf.User)
+            .ThenInclude(u => u.Interests)
+            .FirstOrDefaultAsync(uf => uf.UserId == userId &&
                                                                               uf.FriendId == friendId);
-        var secondUserFriend = await _context.UserFriends.FirstOrDefaultAsync(uf => uf.UserId == friendId &&
+        var secondUserFriend = await _context.UserFriends
+            .Include(uf => uf.User)
+            .ThenInclude(u => u.Interests)
+            .FirstOrDefaultAsync(uf => uf.UserId == friendId &&
             uf.FriendId == userId);
 
         if (firstUserFriend == null || secondUserFriend == null)
@@ -85,14 +91,66 @@ public sealed class FriendService: IFriendService
         var friendConnectionId = await _cache.GetStringAsync(friendId.ToString());
         var userConnectionId = await _cache.GetStringAsync(userId.ToString());
 
+        var flag = false;
+        var user = firstUserFriend.User;
+        var friend = secondUserFriend.User;
+        if (user.IsInterestBasedLocationSharable && friend.IsInterestBasedLocationSharable &&
+            user.Interests.Intersect(friend.Interests).Any())
+        {
+            flag = true;
+        }
+        
         if (friendConnectionId != null)
         {
+            
             await _hubContext.Clients.Client(friendConnectionId).ReceiveDeletedFriendId(userId);
+
+            if (flag)
+            {
+                var frozenLocation =
+                    await _context.FreezeLocations.FirstOrDefaultAsync(f =>
+                        f.UserId == userId && f.FreezerUserId == friendId);
+            
+                var userLocationModel = new UserShortLocationModel
+                {
+                    Id = user.Id,
+                    Avatar = user.AvatarFileName != null ? $"{_baseUrlOptions.Url}{user.AvatarFileName}" : null,
+                    Coordinate = frozenLocation is { IsLocationFrozen: true } ? new CoordinatesModel
+                        { Latitude = frozenLocation.Latitude!.Value, Longitude = frozenLocation.Longitude!.Value } : new CoordinatesModel { Latitude = user.Latitude, Longitude = user.Longitude },
+                    FullName = user.FullName,
+                    LastOnline = user.LastOnline,
+                    UserName = user.UserName,
+                    UserStatus = user.UserStatus
+                };
+            
+                await _hubContext.Clients.Client(friendConnectionId).ReceiveAddedUserOfSimilarInterests(userLocationModel);
+            }
         }
 
         if (userConnectionId != null)
-        {
+        { 
             await _hubContext.Clients.Client(userConnectionId).ReceiveDeletedFriendId(friendId);
+            
+            if (flag)
+            {
+                var frozenLocation =
+                    await _context.FreezeLocations.FirstOrDefaultAsync(f =>
+                        f.UserId == friendId && f.FreezerUserId == userId);
+            
+                var friendLocationModel = new UserShortLocationModel
+                {
+                    Id = friend.Id,
+                    Avatar = friend.AvatarFileName != null ? $"{_baseUrlOptions.Url}{friend.AvatarFileName}" : null,
+                    Coordinate = frozenLocation is { IsLocationFrozen: true } ? new CoordinatesModel
+                        { Latitude = frozenLocation.Latitude!.Value, Longitude = frozenLocation.Longitude!.Value } : new CoordinatesModel { Latitude = friend.Latitude, Longitude = friend.Longitude },
+                    FullName = friend.FullName,
+                    LastOnline = friend.LastOnline,
+                    UserName = friend.UserName,
+                    UserStatus = friend.UserStatus
+                };
+            
+                await _hubContext.Clients.Client(userConnectionId).ReceiveAddedUserOfSimilarInterests(friendLocationModel);
+            }
         }
         
         return Result.Success();
