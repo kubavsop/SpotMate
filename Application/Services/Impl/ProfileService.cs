@@ -278,6 +278,8 @@ public class ProfileService: IProfileService
             UserStatus = spotMateUser.UserStatus
         };
         
+        var userConnectionId = await _cache.GetStringAsync(spotMateUser.Id.ToString());
+        
         foreach (var user in users)
         {
             var connectionId = await _cache.GetStringAsync(user.Id.ToString());
@@ -296,7 +298,29 @@ public class ProfileService: IProfileService
                 await _hubContext.Clients.Client(connectionId).ReceiveAddedUserOfSimilarInterests(userLocationModel);
 
                 userLocationModel.Coordinate = defaultCoordinate;
-            }   
+            }
+
+            if (userConnectionId != null)
+            {
+                var frozenLocation =
+                    await _context.FreezeLocations.FirstOrDefaultAsync(f =>
+                        f.UserId == user.Id && f.FreezerUserId == spotMateUser.Id);
+                
+                var userShort = new UserShortLocationModel
+                {
+                    Id = user.Id,
+                    Avatar = user.AvatarFileName != null ? $"{_baseUrlOptions.Url}{user.AvatarFileName}" : null,
+                    Coordinate = frozenLocation != null && frozenLocation.IsLocationFrozen ? new CoordinatesModel
+                    { Latitude = frozenLocation.Latitude!.Value, Longitude = frozenLocation.Longitude!.Value } : new CoordinatesModel
+                        { Latitude = user.Latitude, Longitude = user.Longitude },
+                    FullName = user.FullName,
+                    LastOnline = user.LastOnline,
+                    UserName = user.UserName,
+                    UserStatus = user.UserStatus
+                };
+                
+                await _hubContext.Clients.Client(userConnectionId).ReceiveAddedUserOfSimilarInterests(userShort);
+            }
         }
     }
     
@@ -307,12 +331,20 @@ public class ProfileService: IProfileService
             .Where(u => u.Id != userId && !friends.Contains(u.Id) && u.IsInterestBasedLocationSharable && u.Interests.Select(i => i.Id).Intersect(interestsToNotify).Any() && !u.Interests.Select(i => i.Id).Intersect(interestsToExcept).Any())
             .ToListAsync();
 
+        var userConnectionId = await _cache.GetStringAsync(userId.ToString());
+        
+
         foreach (var user in users)
         {
             var connectionId = await _cache.GetStringAsync(user.Id.ToString());
             if (connectionId != null)
             {
                 await _hubContext.Clients.Client(connectionId).ReceiveDeletedUserOfSimilarInterestsId(userId);
+            }
+
+            if (userConnectionId != null)
+            {
+                await _hubContext.Clients.Client(userConnectionId).ReceiveDeletedUserOfSimilarInterestsId(user.Id);
             }
         }   
     }
