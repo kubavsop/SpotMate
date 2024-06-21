@@ -95,7 +95,7 @@ public sealed class FriendService: IFriendService
         var user = firstUserFriend.User;
         var friend = secondUserFriend.User;
         if (user.IsInterestBasedLocationSharable && friend.IsInterestBasedLocationSharable &&
-            user.Interests.Intersect(friend.Interests).Any())
+            user.Interests.Select(i => i.Id).Intersect(friend.Interests.Select(i => i.Id)).Any())
         {
             flag = true;
         }

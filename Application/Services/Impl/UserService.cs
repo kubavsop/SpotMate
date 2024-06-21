@@ -191,7 +191,7 @@ public class UserService: IUserService
             .FirstOrDefaultAsync(u => u.Id == receiverId))!;
 
         if (senderUser.IsInterestBasedLocationSharable && receiverUser.IsInterestBasedLocationSharable &&
-            senderUser.Interests.Intersect(receiverUser.Interests).Any())
+            senderUser.Interests.Select(i => i.Id).Intersect(receiverUser.Interests.Select(i => i.Id)).Any())
         {
             flag = true;
         }
